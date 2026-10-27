@@ -1,0 +1,45 @@
+name: Sugestão
+description: Uma melhoria ou um recurso novo para o Guild.
+title: "[sugestão] "
+labels: ["sugestao", "triagem"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        > **Esta issue é pública.** Não cole código ou nome de cliente, tokens, PATs
+        > nem URLs internas.
+
+  - type: textarea
+    id: problema
+    attributes:
+      label: Que problema isto resolve
+      description: A situação de hoje — o que dá trabalho, o que falha, o que falta. Comece pelo problema, não pela solução.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposta
+    attributes:
+      label: O que você propõe
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternativas
+    attributes:
+      label: Como você contorna hoje
+      description: Opcional. O que você faz enquanto isto não existe.
+
+  - type: input
+    id: versao
+    attributes:
+      label: Versão do CLI
+      description: Opcional. Saída de `rbb version`.
+
+  - type: checkboxes
+    id: publico
+    attributes:
+      label: Conteúdo público
+      options:
+        - label: Revisei o texto e não há código de cliente, token ou URL interna.
+          required: true

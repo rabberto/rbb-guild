@@ -1,0 +1,2 @@
+# Sem issue em branco: toda issue chega por um formulário, já com tipo e triagem.
+blank_issues_enabled: false

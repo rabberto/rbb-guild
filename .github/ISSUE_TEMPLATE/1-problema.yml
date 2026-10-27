@@ -1,0 +1,98 @@
+name: Problema
+description: Algo do Guild não funciona como deveria — skill, comando rbb, agente, guarda ou instalação.
+title: "[problema] "
+labels: ["problema", "triagem"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        > **Esta issue é pública.** Não cole código ou nome de cliente, tokens, PATs,
+        > URLs internas nem conteúdo de `.rbb/` sem revisar. Um exemplo mínimo vale
+        > mais que o caso real.
+
+  - type: input
+    id: versao
+    attributes:
+      label: Versão do CLI
+      description: Saída de `rbb version`.
+      placeholder: "1.18.6"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: onde
+    attributes:
+      label: Onde aconteceu
+      options:
+        - Skill (comando /nome no Claude Code)
+        - Comando rbb no terminal
+        - Agente derivado
+        - Guarda (hook bloqueou ou deixou passar)
+        - Instalação ou atualização (npm, rbb update, guild-init, guild-upgrade)
+        - Outro
+    validations:
+      required: true
+
+  - type: input
+    id: alvo
+    attributes:
+      label: Skill ou comando
+      placeholder: "/refinement, rbb boards start 123, rbb sync all"
+    validations:
+      required: true
+
+  - type: textarea
+    id: passos
+    attributes:
+      label: O que você fez
+      description: Os passos, na ordem, até o problema aparecer.
+    validations:
+      required: true
+
+  - type: textarea
+    id: esperado
+    attributes:
+      label: O que você esperava
+    validations:
+      required: true
+
+  - type: textarea
+    id: aconteceu
+    attributes:
+      label: O que aconteceu
+      description: Mensagem de erro ou saída do comando. Revise antes de colar — saídas do rbb podem trazer URLs internas.
+      render: shell
+    validations:
+      required: true
+
+  - type: dropdown
+    id: sistema
+    attributes:
+      label: Sistema e shell
+      options:
+        - Windows — Git Bash
+        - Windows — PowerShell
+        - Windows — WSL
+        - macOS
+        - Linux
+    validations:
+      required: true
+
+  - type: dropdown
+    id: modo
+    attributes:
+      label: Modo do board no projeto
+      options:
+        - Azure Boards
+        - Local (markdown em docs/)
+        - Não sei
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: publico
+    attributes:
+      label: Conteúdo público
+      options:
+        - label: Revisei o texto e não há código de cliente, token ou URL interna.
+          required: true
