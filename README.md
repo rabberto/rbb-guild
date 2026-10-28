@@ -4,8 +4,18 @@ O **Guild** é a plataforma de engenharia da Rbb Soluções: skills que o Claude
 executa, agentes por camada da arquitetura, o CLI `rbb` e as guardas que
 bloqueiam escrita fora da fronteira de cada agente.
 
-Este repositório **não tem o código da plataforma**. Ele existe para uma coisa:
-receber o que você tem a dizer sobre o Guild.
+Este repositório **não tem o código da plataforma**. Ele existe para duas coisas:
+publicar o catálogo e o guia de adoção, e receber o que você tem a dizer sobre o
+Guild.
+
+## Documentação
+
+| | |
+|---|---|
+| [Catálogo](https://rabberto.github.io/rbb-guild/) | cada skill, comando e agente da versão mais nova, com o que recebe e o que gera |
+| [Guia prático de adoção](https://github.com/rabberto/rbb-guild/blob/main/docs/adoption-guide.md) | do zero até um repositório com o Guild funcionando, em português |
+
+Os dois são publicados automaticamente a cada versão do CLI. Não edite `docs/` aqui.
 
 ## Abrir uma issue
 
