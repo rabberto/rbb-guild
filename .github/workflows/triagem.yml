@@ -1,0 +1,34 @@
+# Triagem do canal público.
+#
+# Issue aberta pelo formulário já chega com os labels dele. Issue aberta pela
+# API — o `rbb feedback push --publico`, com o gh — chega sem nenhum: para quem
+# não é colaborador, o GitHub descarta o label enviado junto. Esta Action
+# completa o que falta: `triagem` sempre, e `problema` quando nenhum label de
+# tipo veio. Label que a issue já tem não é reenviado.
+name: triagem
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  issues: write
+
+jobs:
+  rotular:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const tem = new Set(context.payload.issue.labels.map((l) => l.name));
+            const faltam = [];
+            if (!tem.has('triagem')) faltam.push('triagem');
+            if (!['problema', 'sugestao', 'duvida'].some((t) => tem.has(t))) faltam.push('problema');
+            if (faltam.length === 0) return;
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.issue.number,
+              labels: faltam,
+            });
