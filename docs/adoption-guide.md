@@ -13,7 +13,7 @@ que você faz à mão é só o que precisa existir antes de qualquer skill rodar
 | Etapa | Quem faz | Quando |
 |---|---|---|
 | **1. Preparar a máquina** | você, à mão (~10 min) | uma vez por máquina |
-| **2. Configurar o repositório** | você, à mão (`rbb configure`) | uma vez por repositório |
+| **2. Configurar o repositório** | você, à mão (`rbb sync all`) | uma vez por repositório |
 | **3. Adoção guiada** | a skill `/guild-init` | uma vez por repositório |
 | **Depois** | a skill `/guild-upgrade` | a cada versão nova da plataforma |
 
@@ -95,7 +95,15 @@ Respondeu uma versão? Autenticação OK.
 ```bash
 npm install -g @rbbsolucoes/rbb-engineering-cli
 rbb version
+rbb configure
 ```
+
+O `rbb configure`, rodado em qualquer pasta, é o passo da máquina: mostra o feed que
+o CLI encontrou no seu `~/.npmrc` e instala as skills de entrada (`/guild-init`,
+`/guild-help` e `/guild-upgrade`) em `~/.claude/skills`. Daqui em diante, todo
+repositório aberto no Claude Code já tem as três, sem nenhum sync. Com uma sessão
+do Claude Code já aberta, rode `/reload-skills` (ou reabra a sessão). O
+`rbb update` as mantém na versão do CLI; para conferir, `rbb sync entrada --show`.
 
 ### 1.4 PAT do board **[Azure Boards]**
 
@@ -132,18 +140,19 @@ Sem isso, criar uma branch a partir de `origin/develop` grava o upstream como
 ## Etapa 2 — Configurar o repositório
 
 As skills vêm no pacote do CLI que você acabou de instalar: o `rbb sync` as
-copia dele para o projeto, sem clonar nada. O que o repositório precisa guardar
-é só o feed, para o `rbb update` saber de onde instalar as versões novas. Na
-raiz do repositório do seu projeto:
+copia dele para o projeto, sem clonar nada. O feed também já está resolvido: o
+`rbb update` o lê do `~/.npmrc` que você gravou no passo 1.2. Nada disto é
+pergunta por repositório. Na raiz do repositório do seu projeto, confira:
 
 ```bash
-rbb configure
+rbb configure --show
 ```
 
-Ele pergunta **uma URL**: o feed npm do CLI. O `rbb configure` grava
-`.rbb/config.json` **dentro do repositório**. O arquivo é versionado e não tem
-segredo: quem clonar depois já vem configurado, e nesta etapa só confere com
-`rbb configure --show`.
+O campo `feed` mostra a URL e de onde ela veio (`"de": "npm"` é o seu
+`~/.npmrc`). `"de": "nenhuma"` quer dizer que o passo 1.2 não foi feito nesta
+máquina: volte a ele. `rbb configure` sem flag mostra o mesmo e não pergunta
+nada; só quem desenvolve a plataforma grava algo aqui (as URLs dos repositórios,
+com `platformBranch`), em `.rbb/config.json`, versionado e sem segredo.
 
 Depois, traga as skills:
 
@@ -256,7 +265,7 @@ você refaz o passo 1.2.
 ## Checklist final
 
 - [ ] `rbb version` responde
-- [ ] `rbb configure --show` → `"origem": "projeto"`, `"faltando": []`, `"legado": []`
+- [ ] `rbb configure --show` → `"faltando": []`, `"legado": []` e `"feed"` com `"de": "npm"`
 - [ ] `rbb doctor` verde
 - [ ] `.rbb/project.yaml` existe e descreve as camadas reais do código
 - [ ] Agentes em `.claude/agents/`, um por camada
@@ -285,12 +294,16 @@ você refaz o passo 1.2.
 |---|---|---|
 | `npm` responde **401/403** ao instalar | npm não autenticado no feed | Refaça o passo 1.2 (`vsts-npm-auth`) |
 | `npm` responde **404** | URL do feed errada no `.npmrc` | Copie a URL de *Artifacts → Connect to feed* |
-| `/guild-init` ou `/guild-upgrade` não aparecem no Claude Code | Etapa 2 não foi feita neste repositório | Rode a etapa 2 e reabra a sessão |
+| `/guild-init` ou `/guild-upgrade` não aparecem no Claude Code | As skills de entrada não estão nesta máquina, ou a sessão abriu antes delas | Rode `rbb sync entrada` (o `--show` diz o estado de cada uma) e depois `/reload-skills` |
 | `rbb sync all` falha pedindo repositório | Repositório sem `.rbb/config.json` | Etapa 2 |
 | Aviso "Usando ~/.rbb/config.json (global)" | Config antiga, da época em que era por máquina | Etapa 2 — grava a config no repositório |
-| `rbb update` diz que não há feed configurado | Rodou fora de um repositório configurado | Rode dentro do repositório, ou defina `RBB_NPM_REGISTRY` com a URL do feed |
+| `rbb update` diz que não há feed do CLI | O `~/.npmrc` desta máquina não tem o escopo `@rbbsolucoes` | Refaça o passo 1.2, que grava a URL e a credencial |
 | Board responde **401** / `TF400813` **[Azure Boards]** | PAT ausente, expirado ou sem escopo | Confira a variável do passo 1.4 e abra um terminal novo |
 | Gate ou script falha com "sem node" no Windows | Rodou `bash` pelo PowerShell (WSL) | Use o Git Bash |
+
+Para tirar as skills de entrada da máquina, apague as pastas `guild-init`,
+`guild-help` e `guild-upgrade` de `~/.claude/skills/` e o arquivo
+`~/.rbb/skills-de-entrada.json`: o `npm uninstall -g` não as remove.
 
 Dúvidas ou feedback: `rbb feedback new` registra, e o `rbb feedback push` envia.
 Sem o board da plataforma, o envio vira uma issue pública no
