@@ -94,5 +94,5 @@ body:
     attributes:
       label: Conteúdo público
       options:
-        - label: Revisei o texto e não há código de cliente, token ou URL interna.
+        - label: Revisei o texto e não há código de cliente, token ou URL interna, nem nome de repositório ou de classe do projeto — cito a camada (api, domain, repository).
           required: true
