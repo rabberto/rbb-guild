@@ -252,6 +252,10 @@ você refaz o passo 1.2.
 | Atualizar a plataforma inteira (CLI, skills, agentes, hooks) | `/guild-upgrade` |
 | Registrar um problema ou uma sugestão | `/feedback <o que aconteceu>` |
 
+Sem o board da plataforma, o feedback vira issue **pública**: cite a camada em que
+o problema nasceu (api, domain, repository), e não o nome do repositório nem o de
+uma classe do projeto. O envio recusa o texto que os cita e diz o trecho a reescrever.
+
 ---
 
 ## Problemas comuns

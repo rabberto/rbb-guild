@@ -1,0 +1,19 @@
+{
+  "versao": "v1.21.2",
+  "issues": [
+    {
+      "url": "https://github.com/rabberto/rbb-guild/issues/5",
+      "numero": 5,
+      "cards": [
+        983
+      ]
+    },
+    {
+      "url": "https://github.com/rabberto/rbb-guild/issues/6",
+      "numero": 6,
+      "cards": [
+        984
+      ]
+    }
+  ]
+}
