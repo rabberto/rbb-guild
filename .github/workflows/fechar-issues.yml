@@ -1,0 +1,129 @@
+# Fecha as issues que uma versão do CLI resolve.
+#
+# O Production do Guild publica, no mesmo push do catálogo e do guia, o
+# manifesto releases/<vX.Y.Z>.json: a versão e as issues cujos cards entraram
+# nela — só as que têm TODOS os cards publicados. Este workflow lê os manifestos
+# ADICIONADOS no push, comenta a versão e o `rbb update` e fecha cada issue.
+#
+# Idempotente: issue fechada é pulada, e a que já tem o marcador
+# <!-- rbb-release:vX.Y.Z --> também — reaberta à mão, ela só volta a fechar se
+# um manifesto futuro a citar. Falha deixa o job vermelho na aba Actions; a
+# publicação no Guild não depende disto, e um workflow_dispatch com a versão
+# refaz o trabalho.
+name: fechar-issues
+
+on:
+  push:
+    branches: [main]
+    paths: ['releases/*.json']
+  workflow_dispatch:
+    inputs:
+      versao:
+        description: 'Versão do manifesto (vX.Y.Z), lido de releases/<versão>.json'
+        required: true
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  fechar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/github-script@v7
+        env:
+          VERSAO: ${{ github.event.inputs.versao }}
+        with:
+          script: |
+            const fs = require('fs');
+            const { owner, repo } = context.repo;
+            const GUIA = 'https://github.com/rabberto/rbb-guild/blob/main/docs/adoption-guide.md';
+            const URL_DE_ISSUE = /^https:\/\/github\.com\/rabberto\/rbb-guild\/issues\/(\d+)$/;
+            const VERSAO = /^v\d+\.\d+\.\d+$/;
+            const MANIFESTO = /^releases\/v\d+\.\d+\.\d+\.json$/;
+
+            let arquivos;
+            if (context.eventName === 'workflow_dispatch') {
+              const v = (process.env.VERSAO || '').trim();
+              if (!VERSAO.test(v)) {
+                core.setFailed(`Versão inválida ('${v}'): esperado vX.Y.Z.`);
+                return;
+              }
+              arquivos = [`releases/${v}.json`];
+            } else {
+              // Só os manifestos que este push ADICIONOU: os antigos já foram tratados.
+              const { before, after } = context.payload;
+              const arquivosDoPush = /^0+$/.test(before)
+                ? (await github.rest.repos.getCommit({ owner, repo, ref: after })).data.files
+                : (await github.rest.repos.compareCommitsWithBasehead({ owner, repo, basehead: `${before}...${after}` })).data.files;
+              arquivos = (arquivosDoPush || [])
+                .filter((f) => f.status === 'added' && MANIFESTO.test(f.filename))
+                .map((f) => f.filename);
+            }
+            if (arquivos.length === 0) {
+              core.info('Nenhum manifesto novo neste push.');
+              return;
+            }
+
+            const falhas = [];
+            for (const arquivo of arquivos) {
+              let manifesto;
+              try {
+                manifesto = JSON.parse(fs.readFileSync(arquivo, 'utf8'));
+              } catch (e) {
+                falhas.push(`${arquivo}: ${e.message}`);
+                continue;
+              }
+              const versao = manifesto.versao;
+              if (!VERSAO.test(versao || '') || arquivo !== `releases/${versao}.json`) {
+                falhas.push(`${arquivo}: a versão '${versao}' não confere com o nome do arquivo.`);
+                continue;
+              }
+              const marcador = `<!-- rbb-release:${versao} -->`;
+              for (const issue of manifesto.issues || []) {
+                const m = URL_DE_ISSUE.exec(issue.url || '');
+                if (!m || Number(m[1]) !== issue.numero) {
+                  falhas.push(`${arquivo}: entrada inválida ${JSON.stringify(issue)}.`);
+                  continue;
+                }
+                const issue_number = issue.numero;
+                try {
+                  const { data } = await github.rest.issues.get({ owner, repo, issue_number });
+                  if (data.pull_request) {
+                    core.info(`#${issue_number} é um PR — pulado.`);
+                    continue;
+                  }
+                  if (data.state === 'closed') {
+                    core.info(`#${issue_number} já fechada — pulada.`);
+                    continue;
+                  }
+                  const comentarios = await github.paginate(github.rest.issues.listComments, {
+                    owner, repo, issue_number, per_page: 100,
+                  });
+                  if (comentarios.some((c) => (c.body || '').includes(marcador))) {
+                    core.info(`#${issue_number} já tem o comentário da ${versao} — pulada.`);
+                    continue;
+                  }
+                  await github.rest.issues.createComment({
+                    owner, repo, issue_number,
+                    body: [
+                      `Resolvida na versão **${versao}** do CLI. Para atualizar: \`rbb update\`.`,
+                      '',
+                      `Guia de adoção: ${GUIA}`,
+                      '',
+                      marcador,
+                    ].join('\n'),
+                  });
+                  await github.rest.issues.update({
+                    owner, repo, issue_number, state: 'closed', state_reason: 'completed',
+                  });
+                  core.info(`#${issue_number} fechada (${versao}).`);
+                } catch (e) {
+                  falhas.push(`#${issue_number}: ${e.message}`);
+                }
+              }
+            }
+            if (falhas.length > 0) {
+              core.setFailed(`Issues por fechar:\n${falhas.join('\n')}`);
+            }
