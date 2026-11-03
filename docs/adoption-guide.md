@@ -231,6 +231,13 @@ deixar o comando falhar.
 Ela não pede tokens: se faltar autenticação no feed, ela mostra o que fazer e
 você refaz o passo 1.2.
 
+**Perfil sem mesa redonda.** O time de agentes só se regenera de um perfil que a
+mesa redonda aprovou: três revisores independentes conferem o perfil contra o código
+antes de o time ser gerado. Todo perfil anterior à mesa não a tem, então o
+`/guild-upgrade` atualiza tudo, reinstala a guarda e termina **pendente**, pedindo que
+você rode `/guild-init`: ele refaz a análise com a mesa e gera o time de novo. É uma
+vez por projeto, e o time atual segue valendo até lá.
+
 ---
 
 ## Checklist final
