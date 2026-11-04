@@ -265,6 +265,28 @@ uma classe do projeto. O envio recusa o texto que os cita e diz o trecho a reesc
 
 ---
 
+## O checkpoint antes de implementar
+
+Quem analisa carrega o contexto todo, e conduzir a implementação nessa mesma sessão
+custa tanto quanto os subagentes. Por isso o Guild recusa o primeiro despacho de
+implementação até você decidir onde ela roda. A recusa não é erro: é a pergunta que o
+`/orchestrator` vai te fazer, junto com o que a regra sugere para conduzir.
+
+- **Seguir nesta sessão**: diga ao orchestrator que segue. A decisão é gravada e a
+  implementação começa.
+- **Parar e conduzir em sessão nova**: diga que quer parar. O orchestrator escreve um
+  resumo selado do que só a conversa sabe (decisões que não foram para documento nem para
+  card, o que não refazer, o que está em aberto) e pausa o fluxo. A sessão nova lê o resumo
+  e segue de onde parou, sem repetir o que você já aprovou.
+
+Quem grava tudo isso é o orchestrator: você só diz o que quer a ele.
+
+Depois de parar, **a sessão que parou não conduz mais**: o Guild recusa qualquer
+despacho dela, mesmo que outra sessão já tenha assumido o fluxo. Se você mudar de ideia,
+diga ao orchestrator, com o motivo: o motivo vai ao registro do fluxo.
+
+---
+
 ## Problemas comuns
 
 | Sintoma | Causa provável | O que fazer |
