@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Guia prático de adoção — Guild</title>
+  <meta name="description" content="Do zero até um repositório com o Guild funcionando: a máquina, o /guild-init e o dia a dia.">
+  <!--
+    GERADO. Não edite: a fonte é docs/runbooks/guia-pratico_adocao-guild.md, e esta
+    página sai dela a cada publicação (tests/lib/paginas-guild.js guia).
+  -->
+<!-- layout:estilo -->
+<style>
+/*
+  Layout comum das páginas públicas do Guild (#1039): apresentação, catálogo e guia.
+
+  Fonte única. Ninguém edita a cópia: tests/lib/paginas-guild.js a escreve dentro de
+  cada página, entre as marcas layout:estilo, porque a página precisa abrir sozinha (o catálogo também vai no pacote do CLI e abre sem rede).
+  Mudou aqui? Rode `node tests/lib/paginas-guild.js aplicar docs/catalog.html
+  docs/apresentacao.html`. O gate 74 reprova a página que ficou para trás.
+
+  Só o que as três páginas têm em comum mora aqui: as cores, o topo, o cabeçalho da
+  página, o botão de chamada e o rodapé. O resto é de cada página.
+*/
+:root {
+  --bg:#0d1117; --surface:#161b22; --surface-hover:#1c2128; --border:#21262d; --border-focus:#3b82f6;
+  --text:#e6edf3; --text-muted:#7d8590; --text-dim:#484f58; --code-bg:#1c2128;
+  --accent-skill:#3b82f6; --accent-cli:#f59e0b; --accent-tmpl:#8b5cf6; --accent-agent:#10b981;
+  --tag-discovery:#60a5fa; --tag-planning:#a78bfa; --tag-dev:#34d399; --tag-review:#fb923c;
+  --tag-debug:#f87171; --tag-delivery:#2dd4bf; --tag-init:#60a5fa; --tag-sync:#a78bfa;
+  --tag-boards:#34d399; --tag-utils:#94a3b8; --tag-tbackend:#34d399; --tag-tfrontend:#38bdf8;
+  --tag-tfullstack:#a78bfa; --tag-tdevops:#f97316;
+  --glow:rgba(59,130,246,.12); --radius:8px; --radius-sm:5px; --largura:1200px;
+  --sans:system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'SF Mono','Fira Code','Cascadia Code','Consolas','Liberation Mono',monospace;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg:#f6f8fa; --surface:#ffffff; --surface-hover:#f0f3f7; --border:#d0d7de;
+    --text:#1f2328; --text-muted:#636c76; --text-dim:#9198a1; --code-bg:#eaedf1; --glow:rgba(59,130,246,.08);
+  }
+}
+:root[data-theme="light"] {
+  --bg:#f6f8fa; --surface:#ffffff; --surface-hover:#f0f3f7; --border:#d0d7de;
+  --text:#1f2328; --text-muted:#636c76; --text-dim:#9198a1; --code-bg:#eaedf1; --glow:rgba(59,130,246,.08);
+}
+
+*, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+html { scroll-padding-top:72px; }
+body { font-family:var(--sans); background:var(--bg); color:var(--text); line-height:1.6; min-height:100vh; display:flex; flex-direction:column; }
+body > main, body > .g-corpo { flex:1; }
+
+/* ── topo: igual nas três, na mesma largura, para a navegação não pular ── */
+.g-topo { position:sticky; top:0; z-index:100; background:var(--bg); border-bottom:1px solid var(--border); }
+.g-topo-in { max-width:var(--largura); margin:0 auto; padding:0 24px; height:56px; display:flex; align-items:center; gap:20px; }
+.g-marca { display:flex; align-items:center; gap:8px; flex-shrink:0; color:var(--text); font-size:15px; font-weight:600; text-decoration:none; }
+.g-selo { font-family:var(--mono); font-size:12px; font-weight:600; letter-spacing:-.3px; background:var(--accent-skill); color:#fff; padding:3px 7px; border-radius:4px; }
+.g-nav { margin-left:auto; min-width:0; display:flex; align-items:center; gap:2px; overflow-x:auto; scrollbar-width:none; }
+.g-nav::-webkit-scrollbar { display:none; }
+.g-nav a { font-size:13px; font-weight:500; color:var(--text-muted); text-decoration:none; padding:6px 10px; border-radius:var(--radius-sm); white-space:nowrap; transition:background .15s, color .15s; }
+.g-nav a:hover { background:var(--surface); color:var(--text); }
+.g-nav a[aria-current="page"] { color:var(--text); background:var(--surface); box-shadow:inset 0 -2px 0 var(--accent-skill); }
+.g-tema { flex-shrink:0; width:32px; height:32px; border:none; background:none; cursor:pointer; border-radius:var(--radius-sm); display:flex; align-items:center; justify-content:center; color:var(--text-muted); transition:background .15s, color .15s; }
+.g-tema:hover { background:var(--surface); color:var(--text); }
+.g-topo a:focus-visible, .g-tema:focus-visible, .g-cta:focus-visible, .g-rodape a:focus-visible { outline:2px solid var(--accent-skill); outline-offset:2px; }
+
+/* ── cabeçalho da página: o que ela é, em uma linha ── */
+.g-cabeca { max-width:var(--largura); width:100%; margin:0 auto; padding:44px 24px 8px; }
+.g-kicker { font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:.08em; color:var(--text-muted); margin-bottom:6px; }
+.g-titulo { font-size:32px; line-height:1.2; letter-spacing:-.02em; font-weight:700; margin-bottom:12px; }
+.g-lead { font-size:17px; line-height:1.6; color:var(--text-muted); max-width:720px; }
+
+.g-cta { margin-top:18px; display:inline-flex; align-items:center; gap:8px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:10px 16px; font-size:14px; font-weight:600; color:var(--accent-skill); text-decoration:none; transition:border-color .15s, box-shadow .15s; }
+.g-cta:hover { border-color:var(--accent-skill); box-shadow:0 0 0 3px var(--glow); }
+
+/* ── rodapé ── */
+.g-rodape { border-top:1px solid var(--border); margin-top:48px; }
+.g-rodape-in { max-width:var(--largura); margin:0 auto; padding:22px 24px; display:flex; flex-wrap:wrap; gap:20px; font-size:13px; color:var(--text-muted); }
+.g-rodape a { color:var(--text-muted); text-decoration:none; }
+.g-rodape a:hover { color:var(--text); }
+.g-assina { margin-left:auto; color:var(--text-dim); }
+
+/* ── diagramas: as peças do desenho, iguais na apresentação e no guia ── */
+.diagrama { margin-top:22px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:12px; overflow-x:auto; }
+.diagrama svg { display:block; width:100%; max-width:900px; min-width:620px; height:auto; margin:0 auto; }
+.diagrama figcaption { font-size:12.5px; color:var(--text-muted); text-align:center; margin-top:6px; }
+.d-harness { fill:none; stroke:var(--accent-cli); stroke-width:1.5; stroke-dasharray:6 5; }
+.d-mesa { fill:none; stroke:var(--tag-planning); stroke-width:1.5; stroke-dasharray:6 5; }
+.d-nota { fill:none; stroke:var(--text-dim); stroke-width:1; stroke-dasharray:4 4; }
+.d-box { fill:var(--surface-hover); stroke:var(--border); stroke-width:1; }
+.d-passo { fill:var(--surface-hover); stroke:var(--border); stroke-width:1; }
+.d-passo-forte { stroke:var(--accent-skill); stroke-width:1.5; }
+.d-dev { fill:var(--surface-hover); stroke:var(--text-dim); stroke-width:1; }
+.d-orq { fill:var(--surface-hover); stroke:var(--tag-planning); stroke-width:1.5; }
+.d-agent { fill:var(--surface-hover); stroke:var(--accent-agent); stroke-width:1.5; }
+.d-rev { fill:var(--surface-hover); stroke:var(--tag-planning); stroke-width:1.2; }
+.d-chip { fill:none; stroke:var(--accent-skill); stroke-width:1; }
+.d-guard { fill:var(--surface-hover); stroke:var(--accent-cli); stroke-width:1; }
+.d-verde { fill:color-mix(in srgb,var(--tag-dev) 12%,transparent); stroke:var(--tag-dev); stroke-width:1.2; }
+.d-vermelho { fill:color-mix(in srgb,var(--tag-debug) 12%,transparent); stroke:var(--tag-debug); stroke-width:1.2; }
+.d-num { fill:var(--accent-skill); }
+.d-seta { stroke:var(--text-dim); stroke-width:1.4; fill:none; }
+.d-ponta { fill:var(--text-dim); }
+.d-t { fill:var(--text); font:600 13px var(--sans); }
+.d-tp { fill:var(--text); font:600 12px var(--sans); }
+.d-m { fill:var(--text-muted); font:12px var(--sans); }
+.d-n { fill:#fff; font:700 12px var(--sans); }
+.d-s { fill:var(--accent-skill); font:11px var(--mono); }
+.d-h { fill:var(--accent-cli); font:600 12px var(--sans); }
+.d-hp { fill:var(--tag-planning); font:600 13px var(--sans); }
+.d-ok { fill:var(--tag-dev); font:600 12px var(--sans); }
+.d-erro { fill:var(--tag-debug); font:600 12px var(--sans); }
+.d-aviso { fill:var(--accent-cli); font:600 12px var(--sans); }
+
+@media (max-width:600px) {
+  .g-topo-in { padding:0 16px; gap:10px; }
+  .g-marca-nome { display:none; }
+  .g-nav a { padding:6px 7px; }
+  .g-nav .g-so-largo { display:none; }
+  .g-cabeca { padding:32px 16px 8px; }
+  .g-titulo { font-size:26px; }
+  .g-rodape-in { padding:20px 16px; }
+}
+</style>
+<!-- /layout:estilo -->
+<style>
+  body { font-size:15px; }
+  .guia { max-width:var(--largura); width:100%; margin:0 auto; padding:8px 24px 0; display:grid; grid-template-columns:220px minmax(0,1fr); gap:48px; align-items:start; }
+  .indice { position:sticky; top:80px; font-size:13px; max-height:calc(100vh - 100px); overflow-y:auto; padding-top:28px; }
+  .indice summary { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.08em; color:var(--text-dim); margin-bottom:8px; cursor:pointer; list-style:none; }
+  .indice summary::-webkit-details-marker { display:none; }
+  .indice ol { list-style:none; border-left:1px solid var(--border); }
+  .indice a { display:block; color:var(--text-muted); text-decoration:none; padding:3px 0 3px 12px; margin-left:-1px; border-left:2px solid transparent; }
+  .indice a:hover { color:var(--text); border-left-color:var(--text-dim); }
+  .indice .n3 a { padding-left:24px; font-size:12.5px; }
+  .indice code { font-size:.9em; }
+  .doc { max-width:760px; min-width:0; }
+  .doc > * + * { margin-top:14px; }
+  .doc h2 { font-size:22px; letter-spacing:-.01em; line-height:1.3; margin-top:44px; padding-top:28px; border-top:1px solid var(--border); }
+  .doc h2:first-child { margin-top:0; }
+  .doc h3 { font-size:16.5px; line-height:1.35; margin-top:30px; }
+  .doc h2 + *, .doc h3 + * { margin-top:10px; }
+  .doc p, .doc li { color:var(--text); }
+  .doc a { color:var(--accent-skill); text-decoration:none; }
+  .doc a:hover { text-decoration:underline; }
+  .doc code { font-family:var(--mono); font-size:.86em; background:var(--code-bg); border:1px solid var(--border); border-radius:4px; padding:1px 5px; }
+  .doc ul, .doc ol { padding-left:22px; }
+  .doc li + li { margin-top:6px; }
+  .doc ul.tarefas { list-style:none; padding-left:0; }
+  .doc ul.tarefas label { display:flex; gap:10px; align-items:baseline; cursor:pointer; }
+  .doc ul.tarefas input { accent-color:var(--accent-agent); transform:translateY(1px); }
+  .selo-board { display:inline-block; font-size:11px; font-weight:600; letter-spacing:.02em; color:var(--accent-skill); background:color-mix(in srgb,var(--accent-skill) 14%,transparent); border-radius:10px; padding:0 8px; vertical-align:1px; white-space:nowrap; }
+  .tabela { overflow-x:auto; border:1px solid var(--border); border-radius:var(--radius); }
+  .doc table { width:100%; border-collapse:collapse; font-size:14px; }
+  .doc th { text-align:left; font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:.05em; color:var(--text-muted); background:var(--surface); }
+  .doc th, .doc td { padding:9px 14px; border-bottom:1px solid var(--border); vertical-align:top; }
+  .doc tr:last-child td { border-bottom:none; }
+  .codigo { position:relative; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:14px 16px; overflow-x:auto; }
+  .codigo code { font-family:var(--mono); font-size:13px; line-height:1.6; background:none; border:none; padding:0; white-space:pre; color:var(--text); }
+  .codigo[data-lang]::before { content:attr(data-lang); position:absolute; top:6px; right:62px; font-size:10.5px; color:var(--text-dim); font-family:var(--mono); }
+  .copiar { position:absolute; top:6px; right:6px; font:inherit; font-size:11px; color:var(--text-muted); background:var(--code-bg); border:1px solid var(--border); border-radius:var(--radius-sm); padding:2px 8px; cursor:pointer; }
+  .copiar:hover { color:var(--text); border-color:var(--text-dim); }
+  .nota { border-left:3px solid var(--accent-cli); background:color-mix(in srgb,var(--accent-cli) 7%,transparent); border-radius:0 var(--radius) var(--radius) 0; padding:10px 16px; }
+  .nota p { color:var(--text); }
+  .nota p + p { margin-top:8px; }
+  @media (max-width:900px) {
+    .guia { grid-template-columns:1fr; gap:8px; }
+    .indice { position:static; max-height:none; padding-top:12px; }
+    .indice summary { list-style:revert; }
+  }
+  @media (max-width:600px) { .guia { padding:8px 16px 0; } }
+</style>
+</head>
+<body>
+<!-- layout:topo pagina="guia" -->
+<header class="g-topo">
+  <div class="g-topo-in">
+    <a class="g-marca" href="https://rabberto.github.io/rbb-guild/apresentacao.html"><span class="g-selo">rbb</span><span class="g-marca-nome">Guild</span></a>
+    <nav class="g-nav" aria-label="Páginas do Guild">
+      <a href="https://rabberto.github.io/rbb-guild/apresentacao.html">Sobre o Guild</a>
+      <a href="https://rabberto.github.io/rbb-guild/">Catálogo</a>
+      <a href="https://rabberto.github.io/rbb-guild/guia.html" aria-current="page">Guia de adoção</a>
+      <a class="g-so-largo" href="https://github.com/rabberto/rbb-guild/issues">Issues</a>
+    </nav>
+    <button class="g-tema" id="g-tema" type="button" title="Tema claro ou escuro" aria-label="Tema claro ou escuro"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M6 .278a.77.77 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278z"/></svg></button>
+  </div>
+</header>
+<script>
+(function () {
+  var raiz = document.documentElement, botao = document.getElementById('g-tema'), chave = 'rbb-guild-tema';
+  var LUA = '<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M6 .278a.77.77 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278z"/></svg>';
+  var SOL = '<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm0 1a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z"/></svg>';
+  var guardado = null;
+  try { guardado = localStorage.getItem(chave); } catch (e) {}
+  if (guardado === 'dark' || guardado === 'light') raiz.setAttribute('data-theme', guardado);
+  function escuro() {
+    var t = raiz.getAttribute('data-theme');
+    return t ? t === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  }
+  function icone() {
+    botao.innerHTML = escuro() ? LUA : SOL;
+    botao.setAttribute('aria-label', escuro() ? 'Mudar para o tema claro' : 'Mudar para o tema escuro');
+  }
+  botao.addEventListener('click', function () {
+    var novo = escuro() ? 'light' : 'dark';
+    raiz.setAttribute('data-theme', novo);
+    try { localStorage.setItem(chave, novo); } catch (e) {}
+    icone();
+  });
+  icone();
+})();
+</script>
+<!-- /layout:topo -->
+
+<div class="g-cabeca">
+  <p class="g-kicker">Guia prático</p>
+  <h1 class="g-titulo">Adotando o Guild no seu time</h1>
+  <p class="g-lead">Este guia leva você do zero até um repositório com o Guild funcionando: CLI instalado, skills disponíveis no Claude Code, agentes derivados e o board conectado.</p>
+</div>
+
+<div class="guia g-corpo">
+  <nav class="indice" aria-label="Nesta página">
+    <details open>
+      <summary>Nesta página</summary>
+      <ol>
+        <li class="n2"><a href="#o-que-é-o-guild-em-30-segundos">O que é o Guild, em 30 segundos</a></li>
+        <li class="n2"><a href="#etapa-1--preparar-a-máquina">Etapa 1 — Preparar a máquina</a></li>
+        <li class="n3"><a href="#11-pré-requisitos">1.1 Pré-requisitos</a></li>
+        <li class="n3"><a href="#12-autenticar-o-npm-no-feed-do-guild">1.2 Autenticar o npm no feed do Guild</a></li>
+        <li class="n3"><a href="#13-instalar-o-cli">1.3 Instalar o CLI</a></li>
+        <li class="n3"><a href="#14-pat-do-board-azure-boards">1.4 PAT do board <span class="selo-board">Azure Boards</span></a></li>
+        <li class="n3"><a href="#15-ajuste-de-git--se-o-time-integra-numa-develop">1.5 Ajuste de git — se o time integra numa <code>develop</code></a></li>
+        <li class="n2"><a href="#etapa-2--configurar-o-repositório">Etapa 2 — Configurar o repositório</a></li>
+        <li class="n3"><a href="#trabalho-em-aberto-já-existente-azure-boards">Trabalho em aberto já existente <span class="selo-board">Azure Boards</span></a></li>
+        <li class="n3"><a href="#precisa-trabalhar-sem-a-guarda">Precisa trabalhar sem a guarda?</a></li>
+        <li class="n3"><a href="#versionar">Versionar</a></li>
+        <li class="n2"><a href="#depois--mantendo-em-dia">Depois — mantendo em dia</a></li>
+        <li class="n2"><a href="#checklist-final">Checklist final</a></li>
+        <li class="n2"><a href="#dia-a-dia">Dia a dia</a></li>
+        <li class="n2"><a href="#o-checkpoint-antes-de-implementar">O checkpoint antes de implementar</a></li>
+        <li class="n2"><a href="#problemas-comuns">Problemas comuns</a></li>
+      </ol>
+    </details>
+  </nav>
+  <article class="doc">
+<p>O Guild roda no <strong>Claude Code</strong>. É lá que as guardas existem: a mesma skill aberta em outra ferramenta roda sem nenhuma delas.</p>
+<p>Quase tudo é <strong>guiado por uma skill</strong> dentro do Claude Code. O que você faz à mão é só a preparação da máquina, uma vez:</p>
+<div class="tabela"><table><thead><tr><th>Etapa</th><th>Quem faz</th><th>Quando</th></tr></thead><tbody><tr><td><strong>1. Preparar a máquina</strong></td><td>você, no terminal (~10 min)</td><td>uma vez por máquina</td></tr><tr><td><strong>2. Configurar o repositório</strong></td><td>a skill <code>/guild-init</code></td><td>uma vez por repositório</td></tr><tr><td><strong>Depois</strong></td><td>a skill <code>/guild-upgrade</code></td><td>a cada versão nova da plataforma</td></tr></tbody></table></div>
+<p>Passos marcados com <span class="selo-board">Azure Boards</span> só valem para o time que controla o trabalho num board do Azure DevOps. Com o board em modo local, pule-os.</p>
+<h2 id="o-que-é-o-guild-em-30-segundos">O que é o Guild, em 30 segundos</h2>
+<div class="tabela"><table><thead><tr><th>Peça</th><th>O que é</th></tr></thead><tbody><tr><td><strong>Skills</strong></td><td>Processos de engenharia que a IA executa (<code>/guild-init</code>, <code>/codebase-analysis</code>, …)</td></tr><tr><td><strong>Agentes</strong></td><td>Um agente dev por camada da arquitetura, cada um com sua fronteira de escrita</td></tr><tr><td><strong>CLI <code>rbb</code></strong></td><td>A parte mecânica: board, sincronização, perfil, verificação. As skills o chamam por você</td></tr><tr><td><strong>Guardas</strong></td><td>Hooks do Claude Code que <strong>bloqueiam de verdade</strong> escrita fora da fronteira do agente</td></tr></tbody></table></div>
+<p>O catálogo completo — cada skill, comando e agente, com o que recebe e o que gera — está em <a href="https://rabberto.github.io/rbb-guild/">https://rabberto.github.io/rbb-guild/</a>. Ele mostra a versão mais nova da plataforma; a instalada na sua máquina responde em <code>rbb version</code>. Sentiu falta de algo do catálogo? Sua versão pode ser mais antiga: rode <code>/guild-upgrade</code>.</p>
+<h2 id="etapa-1--preparar-a-máquina">Etapa 1 — Preparar a máquina</h2>
+<p>Nada disto pode ser feito por skill: ou é o que faz as skills existirem (o CLI), ou é segredo (tokens), que as skills nunca pedem nem gravam.</p>
+<h3 id="11-pré-requisitos">1.1 Pré-requisitos</h3>
+<div class="tabela"><table><thead><tr><th>Ferramenta</th><th>Onde instalar</th></tr></thead><tbody><tr><td><strong>Node.js</strong> (LTS), que traz o <strong>npm</strong></td><td><a href="https://nodejs.org/en/download">https://nodejs.org/en/download</a></td></tr><tr><td><strong>Git</strong> (no Windows, já traz o Git Bash)</td><td><a href="https://git-scm.com/downloads">https://git-scm.com/downloads</a></td></tr><tr><td><strong>Claude Code</strong> (CLI ou extensão do VS Code)</td><td><a href="https://code.claude.com/docs/en/setup">https://code.claude.com/docs/en/setup</a></td></tr></tbody></table></div>
+<p><strong>Windows:</strong> as três pelo <code>winget</code>, no <strong>PowerShell</strong> (o Git Bash só existe depois que o Git for instalado):</p>
+<pre class="codigo" data-lang="powershell"><code>winget install --id OpenJS.NodeJS.LTS -e
+winget install --id Git.Git -e
+winget install --id Anthropic.ClaudeCode -e</code></pre>
+<p>Prefere o Claude Code dentro do VS Code? Instale a extensão <strong>Claude Code</strong> pelo marketplace do VS Code.</p>
+<p>E o acesso ao <strong>feed</strong> do CLI — é o único acesso necessário: skills, agentes e templates vêm dentro do pacote. Quem distribui o Guild para o seu time libera o acesso e passa a URL do feed.</p>
+<p>Depois de instalar, <strong>feche e abra o terminal</strong>: só um terminal novo enxerga o <code>node</code>, o <code>npm</code>, o <code>git</code> e o <code>claude</code> recém-instalados.</p>
+<blockquote class="nota"><p><strong>Windows: daqui em diante, use o Git Bash.</strong> No PowerShell, o comando <code>bash</code> é o do WSL — outro sistema, sem o seu Node. Comandos e gates do Guild rodados por ali falham com mensagens enganosas.</p></blockquote>
+<h3 id="12-autenticar-o-npm-no-feed-do-guild">1.2 Autenticar o npm no feed do Guild</h3>
+<p>O CLI é distribuído por um feed npm do Azure Artifacts. Grave a URL do feed, que vem de quem liberou o seu acesso, trocando <code>&lt;url-do-feed&gt;</code>:</p>
+<pre class="codigo" data-lang="bash"><code>npm config set @rbbsolucoes:registry &lt;url-do-feed&gt;</code></pre>
+<p>O <code>npm config set</code> grava no arquivo de configuração que o npm de fato lê (<code>npm config get userconfig</code> mostra qual), seja qual for o seu terminal.</p>
+<p>Agora a credencial. <strong>Windows:</strong></p>
+<pre class="codigo" data-lang="bash"><code>npm install -g vsts-npm-auth
+vsts-npm-auth -config &quot;$(npm config get userconfig)&quot;</code></pre>
+<p><strong>Linux / macOS / WSL:</strong> gere um PAT em <em>User settings → Personal Access Tokens</em> com escopo <strong>Packaging: Read</strong> e adicione-o ao arquivo que <code>npm config get userconfig</code> mostra, no formato de <em>Artifacts → Connect to feed → npm → Other</em>.</p>
+<p>Teste:</p>
+<pre class="codigo" data-lang="bash"><code>npm view @rbbsolucoes/rbb-engineering-cli version</code></pre>
+<p>Respondeu uma versão? Autenticação OK.</p>
+<h3 id="13-instalar-o-cli">1.3 Instalar o CLI</h3>
+<pre class="codigo" data-lang="bash"><code>npm install -g @rbbsolucoes/rbb-engineering-cli
+rbb version
+rbb configure</code></pre>
+<p>O <code>rbb configure</code>, rodado em qualquer pasta, é o passo da máquina: mostra o feed que o CLI encontrou no seu npm e instala as skills de entrada (<code>/guild-init</code>, <code>/guild-help</code> e <code>/guild-upgrade</code>) em <code>~/.claude/skills</code>. Daqui em diante, todo repositório aberto no Claude Code já tem as três. Com uma sessão do Claude Code já aberta, rode <code>/reload-skills</code> (ou reabra a sessão).</p>
+<h3 id="14-pat-do-board-azure-boards">1.4 PAT do board <span class="selo-board">Azure Boards</span></h3>
+<p>O Guild lê o PAT de uma <strong>variável de ambiente</strong> — ele nunca é gravado em arquivo. Gere um PAT com escopo <strong>Work Items: Read &amp; Write</strong> e defina a variável. O nome é escolha do time: o <code>/guild-init</code> pergunta qual é e grava só o <strong>nome</strong> em <code>.rbb/boards.json</code>. Na Rbb, <code>AZURE_TEAM_ADM_EXT_PAT</code>:</p>
+<pre class="codigo" data-lang="bash"><code># Windows (permanente — abra um terminal novo depois)
+setx AZURE_TEAM_ADM_EXT_PAT &quot;&lt;seu-pat&gt;&quot;
+
+# bash (Linux/macOS) — coloque no ~/.bashrc ou ~/.zshrc
+export AZURE_TEAM_ADM_EXT_PAT=&lt;seu-pat&gt;</code></pre>
+<blockquote class="nota"><p>Se você já usa o <code>az</code> CLI, <code>AZURE_DEVOPS_EXT_PAT</code> também é aceita.</p></blockquote>
+<h3 id="15-ajuste-de-git--se-o-time-integra-numa-develop">1.5 Ajuste de git — se o time integra numa <code>develop</code></h3>
+<p>Cada time tem o seu fluxo de branch. Este ajuste vale para quem cria as branches de trabalho a partir de <code>origin/develop</code>:</p>
+<pre class="codigo" data-lang="bash"><code>git config --global branch.autoSetupMerge simple</code></pre>
+<p>Sem isso, criar uma branch a partir de <code>origin/develop</code> grava o upstream como <code>origin/develop</code>, e o <code>git push</code> passa a sugerir empurrar direto para a <code>develop</code>. Com <code>simple</code>, use <code>git push -u origin HEAD</code> na primeira vez.</p>
+<h2 id="etapa-2--configurar-o-repositório">Etapa 2 — Configurar o repositório</h2>
+<p>Nada aqui é à mão. Abra o Claude Code na raiz do repositório e execute:</p>
+<pre class="codigo"><code>/guild-init</code></pre>
+<p>A skill lê o que já existe, mostra um <strong>plano</strong> antes de agir e conduz o resto. Você responde às perguntas; ela explica cada escolha.</p>
+<figure class="diagrama">
+<svg viewBox="0 0 760 672" role="img" aria-labelledby="init-titulo init-desc">
+  <title id="init-titulo">O que o /guild-init faz no seu repositório</title>
+  <desc id="init-desc">Você roda o /guild-init. Ele lê o estado e mostra o plano, que você aprova. Depois traz a plataforma, conecta o board, gera o perfil do projeto, que passa pela mesa redonda de três revisores, atualiza as dependências, deriva um agente por camada com a guarda ligada e verifica a máquina e o projeto. Verde conclui a adoção; vermelho a deixa pendente, com o passo que resolve.</desc>
+  <!--
+    Passos do /guild-init no guia em página (#1039). Cada <g data-passo="N"> é uma linha da
+    tabela da Etapa 2 do guia: o gerador (tests/lib/paginas-guild.js) recusa a página se os
+    números não baterem. Cores e fontes vêm do layout comum (classes .d-* em docs/layout/guild.css).
+  -->
+  <defs>
+    <marker id="ponta-init" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="d-ponta" d="M0,0 L10,5 L0,10 z"/>
+    </marker>
+  </defs>
+
+  <rect class="d-dev" x="110" y="16" width="200" height="40" rx="8"/>
+  <text class="d-t" x="210" y="41" text-anchor="middle">você roda /guild-init</text>
+  <path class="d-seta" d="M210 56 L210 78" marker-end="url(#ponta-init)"/>
+
+  <rect class="d-orq" x="50" y="80" width="320" height="56" rx="8"/>
+  <text class="d-t" x="210" y="104" text-anchor="middle">lê o que já existe e mostra o plano</text>
+  <text class="d-m" x="210" y="123" text-anchor="middle">você aprova antes de qualquer mudança</text>
+  <path class="d-seta" d="M210 136 L210 174" marker-end="url(#ponta-init)"/>
+
+  <g data-passo="1">
+    <rect class="d-passo" x="30" y="176" width="360" height="54" rx="8"/>
+    <circle class="d-num" cx="58" cy="203" r="13"/><text class="d-n" x="58" y="207" text-anchor="middle">1</text>
+    <text class="d-t" x="82" y="199">Traz a plataforma</text>
+    <text class="d-m" x="82" y="218">skills e agentes no repositório</text>
+  </g>
+  <path class="d-seta" d="M210 230 L210 248" marker-end="url(#ponta-init)"/>
+
+  <g data-passo="2">
+    <rect class="d-passo" x="30" y="250" width="360" height="54" rx="8"/>
+    <circle class="d-num" cx="58" cy="277" r="13"/><text class="d-n" x="58" y="281" text-anchor="middle">2</text>
+    <text class="d-t" x="82" y="273">Conecta o board</text>
+    <text class="d-m" x="82" y="292">local ou Azure Boards · testa a conexão</text>
+  </g>
+  <path class="d-seta" d="M210 304 L210 322" marker-end="url(#ponta-init)"/>
+
+  <g data-passo="3">
+    <rect class="d-passo d-passo-forte" x="30" y="324" width="360" height="54" rx="8"/>
+    <circle class="d-num" cx="58" cy="351" r="13"/><text class="d-n" x="58" y="355" text-anchor="middle">3</text>
+    <text class="d-t" x="82" y="347">Gera o perfil do projeto</text>
+    <text class="d-m" x="82" y="366">analisa o código · só se faltar ou estiver velho</text>
+  </g>
+  <path class="d-seta" d="M210 378 L210 396" marker-end="url(#ponta-init)"/>
+
+  <g data-passo="4">
+    <rect class="d-passo" x="30" y="398" width="360" height="54" rx="8"/>
+    <circle class="d-num" cx="58" cy="425" r="13"/><text class="d-n" x="58" y="429" text-anchor="middle">4</text>
+    <text class="d-t" x="82" y="421">Atualiza as dependências</text>
+    <text class="d-m" x="82" y="440">o que um programa confere, em segundos</text>
+  </g>
+  <path class="d-seta" d="M210 452 L210 470" marker-end="url(#ponta-init)"/>
+
+  <g data-passo="5">
+    <rect class="d-passo d-passo-forte" x="30" y="472" width="360" height="54" rx="8"/>
+    <circle class="d-num" cx="58" cy="499" r="13"/><text class="d-n" x="58" y="503" text-anchor="middle">5</text>
+    <text class="d-t" x="82" y="495">Deriva o time e liga a guarda</text>
+    <text class="d-m" x="82" y="514">um agente por camada · hooks instalados</text>
+  </g>
+  <path class="d-seta" d="M210 526 L210 544" marker-end="url(#ponta-init)"/>
+
+  <g data-passo="6">
+    <rect class="d-passo" x="30" y="546" width="360" height="54" rx="8"/>
+    <circle class="d-num" cx="58" cy="573" r="13"/><text class="d-n" x="58" y="577" text-anchor="middle">6</text>
+    <text class="d-t" x="82" y="569">Verifica a máquina e o projeto</text>
+    <text class="d-m" x="82" y="588">a guarda viva, e não só registrada</text>
+  </g>
+
+  <path class="d-seta" d="M210 600 L210 612 L115 612 L115 622" marker-end="url(#ponta-init)"/>
+  <path class="d-seta" d="M210 612 L305 612 L305 622" marker-end="url(#ponta-init)"/>
+  <rect class="d-verde" x="30" y="624" width="170" height="34" rx="17"/>
+  <text class="d-ok" x="115" y="645" text-anchor="middle">verde: adoção concluída</text>
+  <rect class="d-vermelho" x="220" y="624" width="170" height="34" rx="17"/>
+  <text class="d-erro" x="305" y="645" text-anchor="middle">vermelho: pendente</text>
+
+  <!-- a mesa redonda, ao lado do passo 3 -->
+  <path class="d-seta" d="M390 351 L418 351" marker-end="url(#ponta-init)"/>
+  <rect class="d-mesa" x="420" y="296" width="320" height="156" rx="12"/>
+  <text class="d-hp" x="438" y="320">mesa redonda</text>
+  <text class="d-m" x="438" y="339">três revisores independentes, em paralelo,</text>
+  <text class="d-m" x="438" y="355">conferem o perfil contra o código</text>
+  <rect class="d-rev" x="438" y="368" width="92" height="30" rx="15"/>
+  <text class="d-tp" x="484" y="387" text-anchor="middle">Arquitetura</text>
+  <rect class="d-rev" x="534" y="368" width="92" height="30" rx="15"/>
+  <text class="d-tp" x="580" y="387" text-anchor="middle">Completude</text>
+  <rect class="d-rev" x="630" y="368" width="92" height="30" rx="15"/>
+  <text class="d-tp" x="676" y="387" text-anchor="middle">Fronteiras</text>
+  <text class="d-ok" x="438" y="420">✔ aprovada: o time pode ser gerado</text>
+  <text class="d-aviso" x="438" y="439">↻ reprovada: revisa uma vez; depois, você decide</text>
+
+  <!-- o time, ao lado do passo 5 -->
+  <path class="d-seta" d="M390 499 L418 499" marker-end="url(#ponta-init)"/>
+  <rect class="d-box" x="420" y="466" width="320" height="66" rx="10"/>
+  <rect class="d-agent" x="436" y="477" width="84" height="24" rx="6"/>
+  <text class="d-tp" x="478" y="493" text-anchor="middle">dev-api</text>
+  <rect class="d-agent" x="528" y="477" width="96" height="24" rx="6"/>
+  <text class="d-tp" x="576" y="493" text-anchor="middle">dev-domain</text>
+  <rect class="d-agent" x="632" y="477" width="92" height="24" rx="6"/>
+  <text class="d-tp" x="678" y="493" text-anchor="middle">dev-web</text>
+  <text class="d-m" x="436" y="521">cada um só escreve na pasta da sua camada</text>
+
+  <!-- rodar de novo -->
+  <rect class="d-nota" x="420" y="546" width="320" height="54" rx="10"/>
+  <text class="d-t" x="436" y="569">Parou no meio?</text>
+  <text class="d-m" x="436" y="588">rode /guild-init de novo: ele confere cada passo</text>
+</svg>
+<figcaption>O que o <code>/guild-init</code> faz, na ordem. A tabela abaixo diz o mesmo em texto.</figcaption>
+</figure>
+<div class="tabela"><table><thead><tr><th>#</th><th>O que acontece</th></tr></thead><tbody><tr><td>1</td><td>Confere a configuração e traz skills e agentes para o repositório</td></tr><tr><td>2</td><td>Conecta o board — modo (Azure Boards ou local); em Azure Boards, também organização, projeto, nome da variável do PAT e mapeamento de estados, e testa a conexão</td></tr><tr><td>3</td><td>Gera o perfil do projeto (<code>.rbb/project.yaml</code>) com <code>codebase-analysis</code>, <strong>se não existir</strong></td></tr><tr><td>4</td><td>Atualiza no perfil o que é verificável (dependências)</td></tr><tr><td>5</td><td>Deriva um agente por camada <strong>e instala os hooks de guarda</strong></td></tr><tr><td>6</td><td>Verifica a máquina e o projeto, inclusive se a guarda está viva, e não só registrada — vermelho deixa a adoção como pendente</td></tr></tbody></table></div>
+<blockquote class="nota"><p><strong>Mapeamento de estados do board [Azure Boards]:</strong> responda com os estados <strong>reais</strong> do processo do seu board, não com o preset &quot;mais parecido&quot;. Estado que não existe no board faz a guarda recusar transições legítimas depois.</p></blockquote>
+<p>Parou no meio? Rode <code>/guild-init</code> de novo — ela confere o estado antes de cada passo e não destrói configuração existente.</p>
+<h3 id="trabalho-em-aberto-já-existente-azure-boards">Trabalho em aberto já existente <span class="selo-board">Azure Boards</span></h3>
+<p>Só se o time está passando do board <strong>local</strong> para o <strong>Azure Boards</strong> e o repositório já tem backlog, planos ou documentos de trabalho em <code>docs/</code>. Rode <strong>uma vez</strong>:</p>
+<pre class="codigo"><code>/board-adoption</code></pre>
+<p>Ela leva esse trabalho para o board, para não existirem dois controles em paralelo. Com o board em modo local, não há o que fazer aqui.</p>
+<h3 id="precisa-trabalhar-sem-a-guarda">Precisa trabalhar sem a guarda?</h3>
+<p>É o único comando do dia a dia que nenhuma skill faz por você:</p>
+<pre class="codigo" data-lang="bash"><code>rbb guard off     # desliga
+rbb guard on      # religa</code></pre>
+<p>O <code>rbb guard off</code> desliga <strong>só a guarda de escrita</strong>, <strong>só para quem roda</strong> e <strong>só naquela máquina</strong>. Os hooks continuam registrados no <code>.claude/settings.json</code> do time, e a guarda segue valendo para todos os outros. O desligamento fica registrado no ledger, e o <code>rbb guard status</code> diz desde quando está desligada.</p>
+<h3 id="versionar">Versionar</h3>
+<p>Commite o que a adoção gerou (<code>.claude/</code>, <code>.gitignore</code>, <code>.rbb/project.yaml</code>, <code>.rbb/boards.json</code> e, se existir, <code>.rbb/config.json</code>) <strong>numa branch</strong> e abra PR, pelo fluxo de branch do seu time. O <code>.gitignore</code> já vem com as regras certas: o resto de <code>.rbb/</code> é estado local e fica fora do git.</p>
+<h2 id="depois--mantendo-em-dia">Depois — mantendo em dia</h2>
+<p>Saiu versão nova da plataforma, ou algo do Guild falhou por configuração? Abra o Claude Code no repositório e rode:</p>
+<pre class="codigo"><code>/guild-upgrade</code></pre>
+<p>Ela faz o upgrade inteiro, na ordem certa: atualiza o CLI, as skills e os agentes do repositório e as skills de entrada da máquina, o perfil, o time e os hooks, e termina verificando tudo. O que faltar configurar ela pergunta no chat em vez de deixar o comando falhar.</p>
+<p>Ela não pede tokens: se faltar autenticação no feed, ela mostra o que fazer e você refaz o passo 1.2.</p>
+<p><strong>Perfil sem mesa redonda.</strong> O time de agentes só se regenera de um perfil que a mesa redonda aprovou: três revisores independentes conferem o perfil contra o código antes de o time ser gerado. Todo perfil anterior à mesa não a tem, então o <code>/guild-upgrade</code> atualiza tudo, reinstala a guarda e termina <strong>pendente</strong>, pedindo que você rode <code>/guild-init</code>: ele refaz a análise com a mesa e gera o time de novo. É uma vez por projeto, e o time atual segue valendo até lá.</p>
+<h2 id="checklist-final">Checklist final</h2>
+<ul class="tarefas"><li><label><input type="checkbox"> <span><code>rbb version</code> responde</span></label></li><li><label><input type="checkbox"> <span><code>/guild-init</code> terminou sem pendência, com a verificação final verde</span></label></li><li><label><input type="checkbox"> <span><code>.rbb/project.yaml</code> existe e descreve as camadas reais do código</span></label></li><li><label><input type="checkbox"> <span>Agentes em <code>.claude/agents/</code>, um por camada</span></label></li><li><label><input type="checkbox"> <span>O que a adoção gerou está numa branch, com PR aberto</span></label></li></ul>
+<h2 id="dia-a-dia">Dia a dia</h2>
+<div class="tabela"><table><thead><tr><th>Quero…</th><th>No Claude Code</th></tr></thead><tbody><tr><td>Ver todas as skills, comandos e agentes</td><td><a href="https://rabberto.github.io/rbb-guild/">https://rabberto.github.io/rbb-guild/</a></td></tr><tr><td>Saber qual skill serve para o meu caso, ou o estado do Guild neste repositório</td><td><code>/guild-help</code></td></tr><tr><td>Atualizar a plataforma inteira (CLI, skills, agentes, hooks)</td><td><code>/guild-upgrade</code></td></tr><tr><td>Registrar um problema ou uma sugestão</td><td><code>/feedback &lt;o que aconteceu&gt;</code></td></tr></tbody></table></div>
+<p>Sem o board da plataforma, o feedback vira issue <strong>pública</strong>: cite a camada em que o problema nasceu (api, domain, repository), e não o nome do repositório nem o de uma classe do projeto. O envio recusa o texto que os cita e diz o trecho a reescrever.</p>
+<h2 id="o-checkpoint-antes-de-implementar">O checkpoint antes de implementar</h2>
+<p>Quem analisa carrega o contexto todo, e conduzir a implementação nessa mesma sessão custa tanto quanto os subagentes. Por isso o Guild recusa o primeiro despacho de implementação até você decidir onde ela roda. A recusa não é erro: é a pergunta que o <code>/orchestrator</code> vai te fazer, junto com o que a regra sugere para conduzir.</p>
+<ul><li><strong>Seguir nesta sessão</strong>: diga ao orchestrator que segue. A decisão é gravada e a implementação começa.</li><li><strong>Parar e conduzir em sessão nova</strong>: diga que quer parar. O orchestrator escreve um resumo selado do que só a conversa sabe (decisões que não foram para documento nem para card, o que não refazer, o que está em aberto) e pausa o fluxo. A sessão nova lê o resumo e segue de onde parou, sem repetir o que você já aprovou.</li></ul>
+<p>Quem grava tudo isso é o orchestrator: você só diz o que quer a ele.</p>
+<p>Depois de parar, <strong>a sessão que parou não conduz mais</strong>: o Guild recusa qualquer despacho dela, mesmo que outra sessão já tenha assumido o fluxo. Se você mudar de ideia, diga ao orchestrator, com o motivo: o motivo vai ao registro do fluxo.</p>
+<h2 id="problemas-comuns">Problemas comuns</h2>
+<div class="tabela"><table><thead><tr><th>Sintoma</th><th>Causa provável</th><th>O que fazer</th></tr></thead><tbody><tr><td><code>npm</code> responde <strong>401/403</strong> ao instalar</td><td>npm não autenticado no feed</td><td>Refaça o passo 1.2</td></tr><tr><td><code>npm</code> responde <strong>404</strong></td><td>URL do feed errada</td><td>Confira a URL com quem liberou o acesso e refaça o passo 1.2</td></tr><tr><td>O npm avisa <code>Unknown user config &quot;always-auth&quot;</code></td><td>Configuração antiga no seu arquivo do npm</td><td>Apague a linha <code>always-auth=true</code> do arquivo que <code>npm config get userconfig</code> mostra</td></tr><tr><td><code>/guild-init</code> ou <code>/guild-upgrade</code> não aparecem no Claude Code</td><td>As skills de entrada não estão nesta máquina, ou a sessão abriu antes delas</td><td>Refaça o passo 1.3 e rode <code>/reload-skills</code></td></tr><tr><td>O Guild diz que não há feed do CLI</td><td>O npm desta máquina não tem o escopo <code>@rbbsolucoes</code></td><td>Refaça o passo 1.2</td></tr><tr><td>Board responde <strong>401</strong> / <code>TF400813</code> <span class="selo-board">Azure Boards</span></td><td>PAT ausente, expirado ou sem escopo</td><td>Confira a variável do passo 1.4 e abra um terminal novo</td></tr><tr><td>Algo falha com &quot;sem node&quot; no Windows</td><td>Rodou <code>bash</code> pelo PowerShell (WSL)</td><td>Use o Git Bash</td></tr></tbody></table></div>
+<p>Para tirar as skills de entrada da máquina, apague as pastas <code>guild-init</code>, <code>guild-help</code> e <code>guild-upgrade</code> de <code>~/.claude/skills/</code> e o arquivo <code>~/.rbb/skills-de-entrada.json</code>: o <code>npm uninstall -g</code> não as remove.</p>
+<p>Dúvidas ou feedback: <code>/feedback &lt;contexto do problema&gt;</code>. Sem o board da plataforma, o envio vira uma issue pública no <a href="https://github.com/rabberto/rbb-guild/issues">rabberto/rbb-guild</a>.</p>
+  </article>
+</div>
+
+<!-- layout:rodape -->
+<footer class="g-rodape">
+  <div class="g-rodape-in">
+    <a href="https://rabberto.github.io/rbb-guild/apresentacao.html">Sobre o Guild</a>
+    <a href="https://rabberto.github.io/rbb-guild/">Catálogo</a>
+    <a href="https://rabberto.github.io/rbb-guild/guia.html">Guia de adoção</a>
+    <a href="https://github.com/rabberto/rbb-guild/issues">Issues</a>
+    <span class="g-assina">Guild · Rbb Soluções</span>
+  </div>
+</footer>
+<!-- /layout:rodape -->
+<script>
+document.querySelectorAll('.codigo').forEach(function (pre) {
+  if (!navigator.clipboard) return;
+  var b = document.createElement('button');
+  b.className = 'copiar'; b.type = 'button'; b.textContent = 'copiar';
+  b.addEventListener('click', function () {
+    navigator.clipboard.writeText(pre.querySelector('code').textContent).then(function () {
+      b.textContent = 'copiado'; setTimeout(function () { b.textContent = 'copiar'; }, 1500);
+    });
+  });
+  pre.appendChild(b);
+});
+</script>
+</body>
+</html>

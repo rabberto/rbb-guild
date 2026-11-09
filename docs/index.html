@@ -4,81 +4,132 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>rbb · Engineering Catalog</title>
-  <style>
-    :root {
-      --bg:            #0d1117;
-      --surface:       #161b22;
-      --surface-hover: #1c2128;
-      --border:        #21262d;
-      --border-focus:  #3b82f6;
-      --text:          #e6edf3;
-      --text-muted:    #7d8590;
-      --text-dim:      #484f58;
-      --accent-skill:  #3b82f6;
-      --accent-cli:    #f59e0b;
-      --accent-tmpl:   #8b5cf6;
-      --accent-agent:  #10b981;
-      --tag-discovery: #60a5fa;
-      --tag-planning:  #a78bfa;
-      --tag-dev:       #34d399;
-      --tag-review:    #fb923c;
-      --tag-debug:     #f87171;
-      --tag-delivery:  #2dd4bf;
-      --tag-init:      #60a5fa;
-      --tag-sync:      #a78bfa;
-      --tag-boards:    #34d399;
-      --tag-utils:     #94a3b8;
-      --tag-tbackend:  #34d399;
-      --tag-tfrontend: #38bdf8;
-      --tag-tfullstack:#a78bfa;
-      --tag-tdevops:   #f97316;
-      --code-bg:       #1c2128;
-      --glow:          rgba(59,130,246,.12);
-      --radius:        8px;
-      --radius-sm:     5px;
-    }
-    @media (prefers-color-scheme: light) {
-      :root {
-        --bg:#f6f8fa;--surface:#ffffff;--surface-hover:#f0f3f7;
-        --border:#d0d7de;--text:#1f2328;--text-muted:#636c76;
-        --text-dim:#9198a1;--glow:rgba(59,130,246,.08);--code-bg:#eaedf1;
-      }
-    }
-    :root[data-theme="dark"] {
-      --bg:#0d1117;--surface:#161b22;--surface-hover:#1c2128;
-      --border:#21262d;--text:#e6edf3;--text-muted:#7d8590;
-      --text-dim:#484f58;--glow:rgba(59,130,246,.12);--code-bg:#1c2128;
-    }
-    :root[data-theme="light"] {
-      --bg:#f6f8fa;--surface:#ffffff;--surface-hover:#f0f3f7;
-      --border:#d0d7de;--text:#1f2328;--text-muted:#636c76;
-      --text-dim:#9198a1;--glow:rgba(59,130,246,.08);--code-bg:#eaedf1;
-    }
+  <!--
+    O que está entre as marcas layout:* é o layout comum das páginas públicas (#1039):
+    não edite aqui. Edite docs/layout/guild.css e rode
+    `node tests/lib/paginas-guild.js aplicar docs/catalog.html` (gate 74).
+  -->
+<!-- layout:estilo -->
+<style>
+/*
+  Layout comum das páginas públicas do Guild (#1039): apresentação, catálogo e guia.
 
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
-      background: var(--bg); color: var(--text);
-      font-size: 14px; line-height: 1.6; min-height: 100vh;
-    }
-    code, .mono { font-family: 'SF Mono','Fira Code','Cascadia Code','Consolas','Liberation Mono',monospace; font-size: .85em; }
+  Fonte única. Ninguém edita a cópia: tests/lib/paginas-guild.js a escreve dentro de
+  cada página, entre as marcas layout:estilo, porque a página precisa abrir sozinha (o catálogo também vai no pacote do CLI e abre sem rede).
+  Mudou aqui? Rode `node tests/lib/paginas-guild.js aplicar docs/catalog.html
+  docs/apresentacao.html`. O gate 74 reprova a página que ficou para trás.
+
+  Só o que as três páginas têm em comum mora aqui: as cores, o topo, o cabeçalho da
+  página, o botão de chamada e o rodapé. O resto é de cada página.
+*/
+:root {
+  --bg:#0d1117; --surface:#161b22; --surface-hover:#1c2128; --border:#21262d; --border-focus:#3b82f6;
+  --text:#e6edf3; --text-muted:#7d8590; --text-dim:#484f58; --code-bg:#1c2128;
+  --accent-skill:#3b82f6; --accent-cli:#f59e0b; --accent-tmpl:#8b5cf6; --accent-agent:#10b981;
+  --tag-discovery:#60a5fa; --tag-planning:#a78bfa; --tag-dev:#34d399; --tag-review:#fb923c;
+  --tag-debug:#f87171; --tag-delivery:#2dd4bf; --tag-init:#60a5fa; --tag-sync:#a78bfa;
+  --tag-boards:#34d399; --tag-utils:#94a3b8; --tag-tbackend:#34d399; --tag-tfrontend:#38bdf8;
+  --tag-tfullstack:#a78bfa; --tag-tdevops:#f97316;
+  --glow:rgba(59,130,246,.12); --radius:8px; --radius-sm:5px; --largura:1200px;
+  --sans:system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'SF Mono','Fira Code','Cascadia Code','Consolas','Liberation Mono',monospace;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg:#f6f8fa; --surface:#ffffff; --surface-hover:#f0f3f7; --border:#d0d7de;
+    --text:#1f2328; --text-muted:#636c76; --text-dim:#9198a1; --code-bg:#eaedf1; --glow:rgba(59,130,246,.08);
+  }
+}
+:root[data-theme="light"] {
+  --bg:#f6f8fa; --surface:#ffffff; --surface-hover:#f0f3f7; --border:#d0d7de;
+  --text:#1f2328; --text-muted:#636c76; --text-dim:#9198a1; --code-bg:#eaedf1; --glow:rgba(59,130,246,.08);
+}
+
+*, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+html { scroll-padding-top:72px; }
+body { font-family:var(--sans); background:var(--bg); color:var(--text); line-height:1.6; min-height:100vh; display:flex; flex-direction:column; }
+body > main, body > .g-corpo { flex:1; }
+
+/* ── topo: igual nas três, na mesma largura, para a navegação não pular ── */
+.g-topo { position:sticky; top:0; z-index:100; background:var(--bg); border-bottom:1px solid var(--border); }
+.g-topo-in { max-width:var(--largura); margin:0 auto; padding:0 24px; height:56px; display:flex; align-items:center; gap:20px; }
+.g-marca { display:flex; align-items:center; gap:8px; flex-shrink:0; color:var(--text); font-size:15px; font-weight:600; text-decoration:none; }
+.g-selo { font-family:var(--mono); font-size:12px; font-weight:600; letter-spacing:-.3px; background:var(--accent-skill); color:#fff; padding:3px 7px; border-radius:4px; }
+.g-nav { margin-left:auto; min-width:0; display:flex; align-items:center; gap:2px; overflow-x:auto; scrollbar-width:none; }
+.g-nav::-webkit-scrollbar { display:none; }
+.g-nav a { font-size:13px; font-weight:500; color:var(--text-muted); text-decoration:none; padding:6px 10px; border-radius:var(--radius-sm); white-space:nowrap; transition:background .15s, color .15s; }
+.g-nav a:hover { background:var(--surface); color:var(--text); }
+.g-nav a[aria-current="page"] { color:var(--text); background:var(--surface); box-shadow:inset 0 -2px 0 var(--accent-skill); }
+.g-tema { flex-shrink:0; width:32px; height:32px; border:none; background:none; cursor:pointer; border-radius:var(--radius-sm); display:flex; align-items:center; justify-content:center; color:var(--text-muted); transition:background .15s, color .15s; }
+.g-tema:hover { background:var(--surface); color:var(--text); }
+.g-topo a:focus-visible, .g-tema:focus-visible, .g-cta:focus-visible, .g-rodape a:focus-visible { outline:2px solid var(--accent-skill); outline-offset:2px; }
+
+/* ── cabeçalho da página: o que ela é, em uma linha ── */
+.g-cabeca { max-width:var(--largura); width:100%; margin:0 auto; padding:44px 24px 8px; }
+.g-kicker { font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:.08em; color:var(--text-muted); margin-bottom:6px; }
+.g-titulo { font-size:32px; line-height:1.2; letter-spacing:-.02em; font-weight:700; margin-bottom:12px; }
+.g-lead { font-size:17px; line-height:1.6; color:var(--text-muted); max-width:720px; }
+
+.g-cta { margin-top:18px; display:inline-flex; align-items:center; gap:8px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:10px 16px; font-size:14px; font-weight:600; color:var(--accent-skill); text-decoration:none; transition:border-color .15s, box-shadow .15s; }
+.g-cta:hover { border-color:var(--accent-skill); box-shadow:0 0 0 3px var(--glow); }
+
+/* ── rodapé ── */
+.g-rodape { border-top:1px solid var(--border); margin-top:48px; }
+.g-rodape-in { max-width:var(--largura); margin:0 auto; padding:22px 24px; display:flex; flex-wrap:wrap; gap:20px; font-size:13px; color:var(--text-muted); }
+.g-rodape a { color:var(--text-muted); text-decoration:none; }
+.g-rodape a:hover { color:var(--text); }
+.g-assina { margin-left:auto; color:var(--text-dim); }
+
+/* ── diagramas: as peças do desenho, iguais na apresentação e no guia ── */
+.diagrama { margin-top:22px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:12px; overflow-x:auto; }
+.diagrama svg { display:block; width:100%; max-width:900px; min-width:620px; height:auto; margin:0 auto; }
+.diagrama figcaption { font-size:12.5px; color:var(--text-muted); text-align:center; margin-top:6px; }
+.d-harness { fill:none; stroke:var(--accent-cli); stroke-width:1.5; stroke-dasharray:6 5; }
+.d-mesa { fill:none; stroke:var(--tag-planning); stroke-width:1.5; stroke-dasharray:6 5; }
+.d-nota { fill:none; stroke:var(--text-dim); stroke-width:1; stroke-dasharray:4 4; }
+.d-box { fill:var(--surface-hover); stroke:var(--border); stroke-width:1; }
+.d-passo { fill:var(--surface-hover); stroke:var(--border); stroke-width:1; }
+.d-passo-forte { stroke:var(--accent-skill); stroke-width:1.5; }
+.d-dev { fill:var(--surface-hover); stroke:var(--text-dim); stroke-width:1; }
+.d-orq { fill:var(--surface-hover); stroke:var(--tag-planning); stroke-width:1.5; }
+.d-agent { fill:var(--surface-hover); stroke:var(--accent-agent); stroke-width:1.5; }
+.d-rev { fill:var(--surface-hover); stroke:var(--tag-planning); stroke-width:1.2; }
+.d-chip { fill:none; stroke:var(--accent-skill); stroke-width:1; }
+.d-guard { fill:var(--surface-hover); stroke:var(--accent-cli); stroke-width:1; }
+.d-verde { fill:color-mix(in srgb,var(--tag-dev) 12%,transparent); stroke:var(--tag-dev); stroke-width:1.2; }
+.d-vermelho { fill:color-mix(in srgb,var(--tag-debug) 12%,transparent); stroke:var(--tag-debug); stroke-width:1.2; }
+.d-num { fill:var(--accent-skill); }
+.d-seta { stroke:var(--text-dim); stroke-width:1.4; fill:none; }
+.d-ponta { fill:var(--text-dim); }
+.d-t { fill:var(--text); font:600 13px var(--sans); }
+.d-tp { fill:var(--text); font:600 12px var(--sans); }
+.d-m { fill:var(--text-muted); font:12px var(--sans); }
+.d-n { fill:#fff; font:700 12px var(--sans); }
+.d-s { fill:var(--accent-skill); font:11px var(--mono); }
+.d-h { fill:var(--accent-cli); font:600 12px var(--sans); }
+.d-hp { fill:var(--tag-planning); font:600 13px var(--sans); }
+.d-ok { fill:var(--tag-dev); font:600 12px var(--sans); }
+.d-erro { fill:var(--tag-debug); font:600 12px var(--sans); }
+.d-aviso { fill:var(--accent-cli); font:600 12px var(--sans); }
+
+@media (max-width:600px) {
+  .g-topo-in { padding:0 16px; gap:10px; }
+  .g-marca-nome { display:none; }
+  .g-nav a { padding:6px 7px; }
+  .g-nav .g-so-largo { display:none; }
+  .g-cabeca { padding:32px 16px 8px; }
+  .g-titulo { font-size:26px; }
+  .g-rodape-in { padding:20px 16px; }
+}
+</style>
+<!-- /layout:estilo -->
+  <style>
+    body { font-size: 14px; }
+    code, .mono { font-family: var(--mono); font-size: .85em; }
     button { cursor: pointer; border: none; background: none; color: inherit; font: inherit; }
     button:focus-visible { outline: 2px solid var(--accent-skill); outline-offset: 2px; }
 
-    .header {
-      position: sticky; top: 0; z-index: 100;
-      background: var(--bg); border-bottom: 1px solid var(--border);
-      padding: 0 24px; display: flex; align-items: center; gap: 16px; height: 56px;
-      backdrop-filter: blur(8px);
-    }
-    .logo { display: flex; align-items: center; gap: 8px; flex-shrink: 0; text-decoration: none; }
-    .logo-badge {
-      font-family: 'SF Mono','Fira Code','Cascadia Code',monospace;
-      font-size: 12px; font-weight: 600; letter-spacing: -.3px;
-      background: var(--accent-skill); color: #fff; padding: 3px 7px; border-radius: 4px;
-    }
-    .logo-label { font-size: 13px; font-weight: 500; color: var(--text-muted); letter-spacing: .01em; }
-    .search-wrap { flex: 1; max-width: 560px; margin: 0 auto; position: relative; }
+    .search-wrap { max-width: 560px; position: relative; }
     .search-wrap svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-dim); pointer-events: none; }
     .search-input {
       width: 100%; height: 36px; background: var(--surface); border: 1px solid var(--border);
@@ -92,16 +143,8 @@
       font-family: monospace; font-size: 10px; color: var(--text-dim);
       background: var(--border); border-radius: 3px; padding: 1px 5px; pointer-events: none;
     }
-    .header-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-    .theme-btn {
-      width: 32px; height: 32px; border-radius: var(--radius-sm);
-      display: flex; align-items: center; justify-content: center;
-      color: var(--text-muted); transition: background .15s, color .15s;
-    }
-    .theme-btn:hover { background: var(--surface); color: var(--text); }
-
     .filter-bar {
-      padding: 12px 24px 0; border-bottom: 1px solid var(--border);
+      padding: 16px max(24px, calc((100% - var(--largura)) / 2 + 24px)) 0; border-bottom: 1px solid var(--border);
       display: flex; flex-direction: column; gap: 8px;
     }
     .tab-group { display: flex; gap: 2px; }
@@ -258,12 +301,10 @@
     .empty-icon { font-size: 32px; margin-bottom: 8px; }
 
     @media (max-width: 600px) {
-      .header { padding: 0 16px; gap: 10px; }
-      .logo-label { display: none; }
       .search-kbd { display: none; }
       .main { padding: 16px; }
       .card-grid { grid-template-columns: 1fr; }
-      .filter-bar { padding: 10px 16px 0; }
+      .filter-bar { padding: 12px 16px 0; }
     }
     ::-webkit-scrollbar { width: 6px; }
     ::-webkit-scrollbar-track { background: transparent; }
@@ -272,11 +313,53 @@
 </head>
 <body>
 
-<header class="header">
-  <a class="logo" href="#">
-    <span class="logo-badge">rbb</span>
-    <span class="logo-label">engineering catalog</span>
-  </a>
+<!-- layout:topo pagina="catalogo" -->
+<header class="g-topo">
+  <div class="g-topo-in">
+    <a class="g-marca" href="https://rabberto.github.io/rbb-guild/apresentacao.html"><span class="g-selo">rbb</span><span class="g-marca-nome">Guild</span></a>
+    <nav class="g-nav" aria-label="Páginas do Guild">
+      <a href="https://rabberto.github.io/rbb-guild/apresentacao.html">Sobre o Guild</a>
+      <a href="https://rabberto.github.io/rbb-guild/" aria-current="page">Catálogo</a>
+      <a href="https://rabberto.github.io/rbb-guild/guia.html">Guia de adoção</a>
+      <a class="g-so-largo" href="https://github.com/rabberto/rbb-guild/issues">Issues</a>
+    </nav>
+    <button class="g-tema" id="g-tema" type="button" title="Tema claro ou escuro" aria-label="Tema claro ou escuro"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M6 .278a.77.77 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278z"/></svg></button>
+  </div>
+</header>
+<script>
+(function () {
+  var raiz = document.documentElement, botao = document.getElementById('g-tema'), chave = 'rbb-guild-tema';
+  var LUA = '<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M6 .278a.77.77 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278z"/></svg>';
+  var SOL = '<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm0 1a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z"/></svg>';
+  var guardado = null;
+  try { guardado = localStorage.getItem(chave); } catch (e) {}
+  if (guardado === 'dark' || guardado === 'light') raiz.setAttribute('data-theme', guardado);
+  function escuro() {
+    var t = raiz.getAttribute('data-theme');
+    return t ? t === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  }
+  function icone() {
+    botao.innerHTML = escuro() ? LUA : SOL;
+    botao.setAttribute('aria-label', escuro() ? 'Mudar para o tema claro' : 'Mudar para o tema escuro');
+  }
+  botao.addEventListener('click', function () {
+    var novo = escuro() ? 'light' : 'dark';
+    raiz.setAttribute('data-theme', novo);
+    try { localStorage.setItem(chave, novo); } catch (e) {}
+    icone();
+  });
+  icone();
+})();
+</script>
+<!-- /layout:topo -->
+
+<div class="g-cabeca">
+  <p class="g-kicker">Catálogo de engenharia</p>
+  <h1 class="g-titulo">Tudo o que o Guild traz, com o que recebe e o que gera.</h1>
+  <p class="g-lead">Skills, comandos do CLI, templates e agentes da versão mais nova da plataforma. A instalada na sua máquina responde em <code>rbb version</code>.</p>
+</div>
+
+<div class="filter-bar" id="filterBar">
   <div class="search-wrap">
     <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
       <path d="M10 6.5a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Zm-.82 3.68a4.5 4.5 0 1 1 .71-.71l2.97 2.96-.71.71-2.97-2.96Z" fill="currentColor"/>
@@ -284,16 +367,6 @@
     <input class="search-input" id="searchInput" type="search" placeholder="Search skills, commands, templates, agents…" autocomplete="off" spellcheck="false">
     <span class="search-kbd">/</span>
   </div>
-  <div class="header-actions">
-    <button class="theme-btn" id="themeBtn" title="Toggle theme" aria-label="Toggle theme">
-      <svg id="themeIcon" width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-        <path d="M6 .278a.77.77 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278z"/>
-      </svg>
-    </button>
-  </div>
-</header>
-
-<div class="filter-bar" id="filterBar">
   <div class="tab-group">
     <button class="tab-btn active" data-tab="all">All <span class="tab-count" id="countAll">0</span></button>
     <button class="tab-btn" data-tab="skill">Skills <span class="tab-count" id="countSkills">0</span></button>
@@ -345,6 +418,18 @@
     <div class="empty" id="emptyAgents"><div class="empty-icon">&#9678;</div>No agents found.</div>
   </div>
 </main>
+
+<!-- layout:rodape -->
+<footer class="g-rodape">
+  <div class="g-rodape-in">
+    <a href="https://rabberto.github.io/rbb-guild/apresentacao.html">Sobre o Guild</a>
+    <a href="https://rabberto.github.io/rbb-guild/">Catálogo</a>
+    <a href="https://rabberto.github.io/rbb-guild/guia.html">Guia de adoção</a>
+    <a href="https://github.com/rabberto/rbb-guild/issues">Issues</a>
+    <span class="g-assina">Guild · Rbb Soluções</span>
+  </div>
+</footer>
+<!-- /layout:rodape -->
 
 <script>
 const SKILLS = [
@@ -550,7 +635,7 @@ const CLI = [
   { id:'boards-get',      type:'cli', group:'boards', groupLabel:'Azure Boards',name:'rbb boards get',      desc:'Lê um work item por ID e mostra título, tipo, estado, descrição, critérios de aceite, Discussion e URL.',        detail:'Use --full to show complete description and acceptance criteria without the 120-char truncation. Use --json for raw JSON output useful in scripts and skill integrations (comments come in the comments field: null when they could not be read, empty when there are none). The Discussion is always printed in full, as plain text, because it is where the developer corrects what the description says (#787); a card without comments prints no Discussion section, and a failed read is reported instead of passing for empty.',                                                                                                                                    usage:'rbb boards get 1234 --full',                                      prereq:'rbb boards configure executed', tags:['azure','work item','read'] },
   { id:'boards-finish-merged', type:'cli', group:'boards', groupLabel:'Azure Boards', name:'rbb boards finish-merged', isNew:true, desc:'Conclui os cards citados no título dos commits do PR que acabou de entrar, pelas mesmas guardas do finish.',detail:'Work done outside the orchestrator never closed its card: #811, #899 and #900 stayed in Doing with the work already on main, because the on-merge half of #781 only existed in rbb flow end (#934). The command reads the PR that just entered: a merge commit means HEAD^1..HEAD^2, a squash (Merged PR ...) uses the lines of the message body, a direct push uses the commit itself; --intervalo overrides it. Only the TITLE of each commit counts - a number in the body is context, and finishing context cards would close work that is not this PR. Each card goes through the same walk as rbb boards finish, so the R1 guard keeps a card with open children open and the command reports it, adding a pipeline warning when TF_BUILD is set. Cards of another project and cards already closed are skipped. Exit code is 0 whenever the board answered, because failing the pipeline after a merge only teaches people to ignore red; board unreachable or no PAT exits 1. Meant for the develop pipeline.',usage:'rbb boards finish-merged  ·  rbb boards finish-merged --intervalo origin/main..HEAD --dry-run',prereq:'.rbb/boards.json com mode azure', tags:['board','state','pipeline','merge'] },
   { id:'boards-release-issues', type:'cli', group:'boards', groupLabel:'Azure Boards', name:'rbb boards release-issues', isNew:true, desc:'Gera o manifesto das issues públicas do rbb-guild que uma versão resolve, lido das descrições dos cards que entraram nela.',detail:'Whoever opened an issue on rabberto/rbb-guild never learned when the fix reached the feed: issues #2 and #3 stayed open with their six cards in Done and 1.21.0 published (#985). The link is the issue URL in the card DESCRIPTION, in the format of shared/contracts/origem-publica.md; a prose mention such as rbb-guild#6 does not link. The cards of the version come from the commit titles between the previous version tag and this one, the same rule as finish-merged. An issue enters the manifest only when ALL cards that cite it are referenced by a commit reachable from the tag. The Production stage writes the manifest with --saida, and paginas-publicas.sh sends it as releases/TAG.json in the same push as the catalog and the guide; a GitHub Action there comments the version plus rbb update and closes each issue. Exit 0 with an empty list; exit 1 only when the board or git fail, and then no file is written. In the pipeline the step has continueOnError, so the pages are published anyway.',usage:'rbb boards release-issues v1.22.0  ·  rbb boards release-issues v1.22.0 --saida manifesto.json',prereq:'.rbb/boards.json com mode azure', tags:['board','pipeline','release','issues'] },
-  { id:'boards-start',    type:'cli', group:'boards', groupLabel:'Azure Boards',name:'rbb boards start',    desc:'Move um card para o estado de trabalho, percorrendo cada degrau obrigatório pelas mesmas guardas, e recusa card em New que não foi refinado.',detail:'Born from feedback card #265, where a Technical Enabler was implemented end to end - code, tests, gates, E2E, six commits - with the card sitting in New the whole time. Part of the reason is that moving a card correctly meant knowing the sequence (New to Refined to Doing), three separate calls, and whoever did not know found out by being refused. This walks it in one command. It is not a shortcut: every step goes through the SAME transition guards as rbb boards update, and the command never passes --force on its own. Steps already passed are skipped rather than failing, because a command that errors for being already correct teaches people not to use it. A refusal stops the walk where it happened and is recorded in the ledger. rbb boards finish closes the card the same way. It also records the card and its ancestors in .rbb/trabalho.json, in any delivery grain, so the write guard accepts a branch named after the US, Feature or Epic that contains the card (#729). A branch with no relation to that hierarchy is a persistent barrier, not a one-time warning: repeating the write no longer passes. The way out belongs to the dev: switch branch, or run --confirmar-branch, which binds the current branch to this card and is recorded in the ledger. A subagent running that flag is refused by the shell guard. A started child moves a work-item parent (US, TE, TD, Bug) to the active state of its type, and Epic/Feature to parent.active; a US/TE/TD/Bug parent still in New is reported, not moved (#912, #933). A card still in New was never refined, so start refuses it (Bug: run bug-triage first); only the developer can pass --sem-refinamento, which is recorded in the ledger and refused to a subagent by the shell guard (#933). The camada:<x> tags of the card go to .rbb/trabalho.json as camadas: the write guard reads them there, on the hot path, and lets the agent write in the declared layers when its own layer is declared too (#956). In mode local there is no board to move: start exits 0 saying so and records nothing, finish exits 1 pointing to closing the document in docs/, and verify-branch and finish-merged exit 0 with nothing to check - none of them sends the dev to rbb boards configure, which would switch the project mode (#965).',usage:'rbb boards start 265  |  rbb boards start 722 --confirmar-branch  |  rbb boards start 265 --sem-refinamento  |  rbb boards finish 265', prereq:'.rbb/boards.json with mapped states', tags:['boards','workflow','guard'] },
+  { id:'boards-start',    type:'cli', group:'boards', groupLabel:'Azure Boards',name:'rbb boards start',    desc:'Move um card para o estado de trabalho, percorrendo cada degrau obrigatório pelas mesmas guardas, e recusa card em New que não foi refinado.',detail:'Born from feedback card #265, where a Technical Enabler was implemented end to end - code, tests, gates, E2E, six commits - with the card sitting in New the whole time. Part of the reason is that moving a card correctly meant knowing the sequence (New to Refined to Doing), three separate calls, and whoever did not know found out by being refused. This walks it in one command. It is not a shortcut: every step goes through the SAME transition guards as rbb boards update, and the command never passes --force on its own. Steps already passed are skipped rather than failing, because a command that errors for being already correct teaches people not to use it. A refusal stops the walk where it happened and is recorded in the ledger. rbb boards finish closes the card the same way. It also records the card and its ancestors in .rbb/trabalho.json, in any delivery grain, so the write guard accepts a branch named after the US, Feature or Epic that contains the card (#729). A branch with no relation to that hierarchy is a persistent barrier, not a one-time warning: repeating the write no longer passes. The way out belongs to the dev: switch branch, or run --confirmar-branch, which binds the current branch to this card and is recorded in the ledger. A subagent running that flag is refused by the shell guard. A started child moves a work-item parent (US, TE, TD, Bug) to the active state of its type, and Epic/Feature to parent.active; a US/TE/TD/Bug parent still in New is reported, not moved (#912, #933). A card still in New was never refined, so start refuses it (Bug: run bug-triage first); only the developer can pass --sem-refinamento, which is recorded in the ledger and refused to a subagent by the shell guard (#933). The camada:<x> tags of the card go to .rbb/trabalho.json as camadas: the write guard reads them there, on the hot path, and lets the agent write in the declared layers when its own layer is declared too (#956). In mode local there is no board to move: start exits 0 saying so and records nothing, finish exits 1 pointing to closing the document in docs/, and verify-branch and finish-merged exit 0 with nothing to check - none of them sends the dev to rbb boards configure, which would switch the project mode (#965). After moving the card, start warns without blocking when the project profile diverges from the code (#1038): the same profile checks as rbb doctor --project, each divergence with its step (a new library asks only for rbb profile refresh, a layer without code asks for codebase-analysis), and how many commits changed the layer folders since the last commit of .rbb/project.yaml. A folder with code and no owner enters only when it changed since that commit, so a new layer shows up and an old config folder does not. With the profile in sync, or no profile, it says nothing; a failed check is one line and the card has already moved.',usage:'rbb boards start 265  |  rbb boards start 722 --confirmar-branch  |  rbb boards start 265 --sem-refinamento  |  rbb boards finish 265', prereq:'.rbb/boards.json with mapped states', tags:['boards','workflow','guard'] },
   { id:'boards-verify',   type:'cli', group:'boards', groupLabel:'Azure Boards',name:'rbb boards verify-branch', desc:'Gate bloqueante: recusa uma branch cujos commits não estão ligados a um card que já saiu de New e de Refined, e do projeto deste board.',detail:'A card cited in a commit TITLE is a work card and each one must be started; a card cited only in the body is context and does not cover it. Before, one started card anywhere was enough, so context cards cited in the body (already started by other work) covered work cards left in New (#781). Without any card in a title, the old rule applies. The instruction to move a card existed - inside the implementation skill. But a rule that only lives inside a skill does not reach whoever works outside it, which is exactly how card #264 got built with its own card untouched. The commit is the only chokepoint found: the skill misses whoever does not use it, the CLI misses whoever edits files directly, but all work becomes a commit. The gate requires at least one commit in the branch to reference a card, and refuses when any referenced card is still in the board initial state - work committed is work started. Merge commits are excluded on purpose: a merged pull request message carries the PR number, not a card, and counting it would turn the gate green without anyone having referenced a card. main, master and develop are exempt because they receive PR merges and the work was already checked at its origin. The initial state comes from the configured preset rather than a hardcoded New, so it also works on basic and agile boards. It needs full history in CI - with a shallow clone the comparison cannot resolve and the gate would fail for ENVIRONMENT rather than defect, which is how a gate loses credibility (AP-013); that case fails loudly saying what to fix. What it deliberately is NOT: prevention. It catches after the fact - the card leaves New when you commit, not when you start. A card from another project of the organization does not count, and a card still in Refined is not started either (#914).',usage:'rbb boards verify-branch --base origin/main --branch <nome>', prereq:'Full history (fetchDepth 0) and board access', tags:['boards','gate','ci','AP-013'] },
   { id:'boards-update',   type:'cli', group:'boards', groupLabel:'Azure Boards',name:'rbb boards update',   desc:'Atualiza campos de um work item existente: título, descrição, critérios de aceite, prioridade, estado (pelo nome ou pelo slot, como refined) e tags, e o stack rank para ordenar o backlog.',   detail:'Supports --stack-rank to control card position in the Azure Boards backlog (lower value = higher priority). Used by the prioritization skill to reorder cards after running a priority session. State changes pass through two guards: an Epic/Feature cannot be closed while it still has open children, and a US/TE/TD cannot jump from the initial state straight to active, skipping refinement. The refinement guard only applies to boards that actually have a refinement state. Use --force to override — the bypassed reason is printed, never silenced. --state also accepts a platform slot in lowercase (new, refined, active, done, approve, closed): the CLI translates it to this board and to the card type (#918).',                                                                                                               usage:'rbb boards update 1234 --stack-rank 10  ·  rbb boards update ID --state refined',                          prereq:'rbb boards configure executed', tags:['azure','work item','update','priority','stack-rank'] },
   { id:'boards-link',     type:'cli', group:'boards', groupLabel:'Azure Boards',name:'rbb boards link',     desc:'Cria a relação de pai e filho entre dois work items existentes.',                                           detail:null,                                                                                                                                                                                               usage:'rbb boards link --parent 1234 --child 1235',                      prereq:'rbb boards configure executed', tags:['azure','link','hierarchy'] },
@@ -558,7 +643,7 @@ const CLI = [
   { id:'boards-comment',  type:'cli', isNew:true, group:'boards', groupLabel:'Azure Boards',name:'rbb boards comment',  desc:'Publica um comentário na Discussion do work item, em markdown ou HTML. Usado pelo code-review para registrar achados sem sobrescrever a descrição.', detail:'Since #1032 markdown in --body goes through the same paraHtml as the description, so lists and bold render in Azure Boards; before, the text went raw and showed as one block. HTML passes as is, and rbb boards get reads the Discussion back as plain text. Works on any work item type (US, TE, TD, Feature, Epic). Used by the code-review skill to post review results and by the tech-lead agent to post consolidated Feature-level summaries.',                     usage:'rbb boards comment 1234 --body "<b>Review</b>..."',               prereq:'rbb boards configure executed', tags:['azure','comment','discussion','code-review'] },
   { id:'boards-search',   type:'cli', group:'boards', groupLabel:'Azure Boards',name:'rbb boards search',   desc:'Busca work items pelo texto do título via WIQL. Serve para achar o Épico ou a Feature pai antes de criar um card.',detail:'No silent 50-item cut: the same listing limit and warning as boards list.',usage:'rbb boards search "authentication"',                               prereq:'rbb boards configure executed', tags:['azure','search','wiql'] },
   { id:'configure',       type:'cli', group:'utils',  groupLabel:'Utilities',   name:'rbb configure',       desc:'Mostra o feed do CLI, lido do ~/.npmrc da máquina, e grava em .rbb/config.json as URLs dos repositórios de quem desenvolve a plataforma.',            detail:'Config is per repository, not global, so a dev working across clients points each repo at its own platform. The file carries no secret — the Azure DevOps PAT comes from an environment variable — so it is meant to be committed: whoever clones the repo is already configured. A legacy ~/.rbb/config.json is still read as a silent fallback, and any PAT stored there is never propagated: a repository without its own config is the normal state, and origem global is not a pending item for guild-init or guild-upgrade (#1026). The platform ships in the CLI package (#969) and the feed is read from the ~/.npmrc of the machine (#976): cliRegistry is legacy, still read below npm, never asked; --show adds feed with its url and origin (env, npm, config or nenhuma). engineeringRepository is required only with platformBranch, when sync clones; templatesRepository never is. The interactive mode shows the feed and asks nothing, except the two repository URLs when platformBranch is set; without a feed it shows step 1.2 of the guide. Inside or outside a repository, the interactive mode is the machine step of the guide: it installs the entry skills in ~/.claude/skills (#977). skillsRepository and agentsRepository pointed at the same monorepo and were folded into engineeringRepository: an old config is still read and is rewritten with the new key on the next save, and --monorepo, --skills-repository and --agents-repository became deprecated synonyms that warn; two of them with different values are refused and nothing is written (#967). Every key also has a non-interactive flag (--cli-registry, --templates-repository, --engineering-repository, --platform-branch) so the guild-upgrade skill can write what the developer answered in chat; an invalid value refuses the whole call. --show prints the effective config as JSON with missing and legacy keys, and never the PAT; origem says where it was read: projeto, global (legacy) or nenhuma, so a skill never offers to keep values that do not exist (#979). --feedback-pat-env records the NAME of the env var for the platform board PAT used by rbb feedback push; a value that looks like a token is refused (#911). Outside a git repository nothing is written (#975): without flags it explains and exits 0, with a writing flag it refuses with exit 1, and both point to the adoption guide section.',                                                                                                                                                                                               usage:'rbb configure  ·  rbb configure --show  ·  rbb configure --cli-registry <url> --engineering-repository <url>  ·  rbb configure --feedback-pat-env NOME',                                                   prereq:null, tags:['config','repositories'] },
-  { id:'flow',            type:'cli', isNew:true, group:'utils',  groupLabel:'Utilities',   name:'rbb flow',            desc:'Grava o fluxo que o orquestrador conduz: etapas, aprovações, recusas, ajustes, a autonomia que vem do time ou de um plano aprovado e a decisão de seguir ou parar antes de implementar. O registro viaja com a branch.',   detail:'flow check-pr is the pull request gate for develop and main: it fails while .rbb/fluxo.json is tracked in the branch. It lives in the CLI so every CI calls the same check; it used to exist only in the Azure Pipelines template, and a GitHub Actions project let the flow reach develop twice (#831, #898). dispatch --executa <n> binds a step to the APPROVED proposal of step n: the approval belongs to the proposal, identified by the step rather than by the card, so the po creating the card approved in a planning opened on a parent card no longer asks the developer twice; record --autonomo accepts it as a base, and dispatch refuses --executa for a step that was not approved (#834). In mode azure, flow end also discards the flow documents whose content lives on the board (backlog, planning, refinement, code-review, todos: the ones its steps recorded and the ones named after a card of the flow, archived included). Analysis documents stay, mode local discards nothing, and --manter-docs skips it (#783). flow end also finishes on the board what the flow executed: Tasks an approved implementation step ran, then the work items (User Story, Technical Enabler, Technical Debt, Bug); Feature and Epic stay. Every move goes through the same guarded path as boards finish, so an item still holding a Task the flow did not run is reported as open instead of closed by proxy; --sem-board skips it (#784). In mode local there is no board, so flow end does the same with the documents in docs/: backlog and refinement of each executed item get Status ✅ Concluído and move to the archived/ subfolder of their folder, and Feature and Epic follow when every declared child is done. Only the header Status line changes - a checkbox is never ticked, and nothing in archived/ is overwritten; what cannot close (open criterion, open child, no Status line) is listed with the reason, by flow status before the final approval and by flow end after; --manter-docs skips it (#964). With an approved refinement, record --autonomo also accepts republishing the plan (refinement or card-enrichment) on the SAME card; refining a child card is a new plan and asks the developer, and a refusal names the real reason instead of always saying no refinement covers the card (#758, #782). The skill orchestrator decides and talks to the developer; this command only records, so the flow survives an interruption and every decision can be audited. One branch, one flow: .rbb/fluxo.json is versioned, carries a GUID of the flow and the branch it started on, and every mutating subcommand stages it, so whoever takes over the branch of another developer gets the approvals with it. Which session conducts it (CLAUDE_CODE_SESSION_ID, verified to be the same session_id hooks receive, including inside subagents) lives apart in .rbb/fluxo.local.json, ignored by git: a flow that arrived by checkout leaves the session free until rbb flow resume, because conducting is an act, not a side effect. A flow started on another branch only warns. The file leaves the branch before the PR (git rm), and an urgent demand goes to a new branch from develop, which is born without a flow. Staging that fails inside a repository warns: it is almost always an old .gitignore, which rbb sync all now completes. Each step is written when it happens, never at the end, and an approved step is never redone. A refusal or a return for missing input is written to the same routing ledger that rbb boards handoff uses, so one fact has one record; on the third refusal the flow stops and only an explicit decision of the developer dispatches that card again. Both also record on the step who it went to (--para), shown by status. A step without a card (--executa 1, a local key) has no routing ledger: a return is recorded on the step and exits 0, and a refusal exits 1 without recording anything, pointing to the return with --falta (#961). Approvals are recorded per transition, and autonomy is PROPOSED after five consecutive approvals without change, then confirmed by the developer in orchestration.autonomous inside the versioned project profile. Dispatching a skill at the wrong level of the breakdown is refused: the command reads the card type on the board, so refinement on an Epic is stopped and the answer names the step that was skipped. If the board does not answer, the dispatch goes through and the rule stays where it also lives, in the skill table. record --autonomo has a second basis besides a team-confirmed transition: an approved refinement in this flow covering the card of the step, walked up from the Task through the board; with the board down there is no proof and the question goes back to the developer. end refuses a flow that implemented code no approved code-review saw afterwards, unless the developer names the reason with --sem-revisao, recorded in the ledger. dispatch --ajuste passes the approved-step lock for a named reason (a review finding, a homologation divergence), and reopen brings a concluded flow back to active for that adjustment. Dispatch refuses an agent that does not exist in .claude/agents/ (#913). Dispatch with --decisao records the dev decision and restarts the refusal count for the card (#915). In mode local, dispatch --card also takes the local key (TE-001, TD-003.TASK-01) from rbb docs proximo: the step records the key instead of a null card, and the approved refinement of the item or of a parent declared in Pai covers its Tasks without a board (#940). A demand opens sized (#951): start --tipo demanda requires --porte P, M or G and --proposta with the minimal proposal the developer approved, which becomes step 1 (agent orchestrator, skill proposta, approved), so the po executes it with --executa 1; a bug takes neither. In a P or M flow, dispatch refuses backlog-breakdown and planning because the approved proposal already is the breakdown, also with --executa, and the refusal gives the publishing command, rbb flow dispatch --agente po --executa 1, without --skill (#960); --decisao from the developer passes and is recorded as guarda.forcada with rule porte-P or porte-M. status shows the size, and a flow recorded before it has none and behaves as G. In P and M, start also refuses a proposal without an Acceptance criteria section holding at least one list item, before recording anything: there is no backlog or planning, so the criteria of the card come only from the proposal (#962). Findings get triaged (#952): dispatch --ajuste on code (any skill outside backlog-breakdown, planning, refinement and card-enrichment, or none) requires --severidade blocker, warning or suggestion, and warning or suggestion also require --decisao with the choice of the developer. dispatch --executa n on the SAME unit (agent, skill and item) passes the approved-step lock, because publishing the approved plan is executing it. record --estacionado (repeatable) keeps an out-of-scope finding in the flow; status lists the Achados estacionados and end prints them last, for the developer to pick which become cards in another flow. record --resultado aprovada or aprovada-com-alteracao runs every --artefato under docs/<skill>/ whose schema carries confere-na-aprovacao through the same check as rbb skill verify, and a NAO CONFORME artifact is refused with its problems, so the orchestrator records rejeitada and dispatches again (#954). A schema without the marker, such as an old cache, is not checked. A folder without a schema of its own, such as docs/backlog/ of backlog-breakdown, is checked by the skill of the open step only when that skill declares the folder in grava-em, and a file that is not .md is skipped (#960); the backlog whose status line the refinement changed in mode local is not checked against the refinement contract (#963). dispatch prints the model and effort of the rule (haiku low for --executa; opus high for refinement M and G, planning, backlog-breakdown, architecture-review, security-review and complexidade:alta; haiku low for complexidade:baixa; sonnet medium otherwise), reading the complexidade tag from the card it already reads. A --modelo that differs with --origem regra warns and is recorded as divergente, never refused; --origem dev wins silently. rbb flow models opens with the rule and counts the divergences (#957). Without --modelo the step records the model of the rule with origin regra, so rbb flow models measures what ran instead of padrao-do-agente (#960). With the guard turned off on this machine (rbb guard off), start refuses and names both ways out, rbb guard on or --sem-guarda; with the flag the flow is born with semGuardaDesde and the ledger records guarda.forcada with rule fluxo-sem-guarda. The orchestrator turns the refusal into a question to the developer. dispatch marks a flow that arrived by checkout on a machine with the guard off, and status and end say the flow ran without guard; the mark stays after guard on, because it is history (#966). The first dispatch of implementation or bugfix, or of a layer agent such as dev-api without --skill (devops is not one; it also counts as implementation for the second dispatch and the warning), without --ajuste or --executa, in the session that approved the last step and with no checkpoint, exits 1, opens no step, leaves no event and names both ways out with the suggestion of modeloDaConducao; --decisao does not release it (#990). flow checkpoint --decisao seguir records the decision of the developer and frees the dispatch. flow checkpoint --decisao parar requires no pending step and an anchor sealed after the end of the last step, pauses the flow and prints the resume block with the suggested model. --antes-de-implementar records an early request: no pause, not a decision, and the refusal then offers only the stop; a later seguir replaces it. The stop binds: in a session that stopped, resume and dispatch exit 1, dispatch even after another session takes over, and only resume --decisao passes, recorded as guarda.forcada with rule checkpoint-ignorado. Checkpoints live in .rbb/fluxo.json and are not steps; the analysis session, the sessions that stopped and the context warning live in .rbb/fluxo.local.json, kept per flow for the last 20 flows that left, so a flow started on another branch does not erase them; the conducting session is not kept, and a flow that comes back still asks to be taken over. Past 250k of context after the first implementation, dispatch warns once per session without refusing. checkpoint, resume and the refusal wait for the board at most 5 seconds in total, aborting the request and falling back to the safe suggestion, so a hung board never holds a decision already made. A subagent cannot run it: the shell guard blocks flow checkpoint, or it could record seguir for the developer. Every checkpoint failure (the refusal in both forms, the stopped session, the checks of checkpoint and an invalid --decisao) keeps its concrete command and then prints Leia o guia: with the link to the checkpoint section of the adoption guide; the orchestrator passes that link on to the developer (#990).',   usage:'rbb flow start "<pedido>" --tipo demanda --porte P|M|G --proposta .rbb/proposta.md [--sem-guarda]  ·  rbb flow dispatch --agente <a> [--card <id>] [--ajuste "<o que>" --severidade blocker]  ·  rbb flow record --resultado <r> --estacionado "<achado>"  ·  rbb flow record --resultado <r> [--proximo <a>] [--autonomo --nota "<desvio>"]  ·  rbb flow status|pause|resume  ·  rbb flow reopen --motivo "<divergencia>"  ·  rbb flow checkpoint --decisao parar|seguir --nota "<palavras do dev>" [--antes-de-implementar]  ·  rbb flow resume --decisao "<motivo>"  ·  rbb flow end [--sem-revisao "<motivo>"]  ·  rbb flow autonomy [--confirmar po>tech-lead]',   prereq:null, tags:['orquestrador','fluxo','aprovacao','autonomia'] },
+  { id:'flow',            type:'cli', isNew:true, group:'utils',  groupLabel:'Utilities',   name:'rbb flow',            desc:'Grava o fluxo que o orquestrador conduz: etapas, aprovações, recusas, ajustes, a autonomia que vem do time ou de um plano aprovado e a decisão de seguir ou parar antes de implementar. O registro viaja com a branch.',   detail:'flow check-pr is the pull request gate for develop and main: it fails while .rbb/fluxo.json is tracked in the branch. It lives in the CLI so every CI calls the same check; it used to exist only in the Azure Pipelines template, and a GitHub Actions project let the flow reach develop twice (#831, #898). dispatch --executa <n> binds a step to the APPROVED proposal of step n: the approval belongs to the proposal, identified by the step rather than by the card, so the po creating the card approved in a planning opened on a parent card no longer asks the developer twice; record --autonomo accepts it as a base, and dispatch refuses --executa for a step that was not approved (#834). In mode azure, flow end also discards the flow documents whose content lives on the board (backlog, planning, refinement, code-review, todos: the ones its steps recorded and the ones named after a card of the flow, archived included). Analysis documents stay, mode local discards nothing, and --manter-docs skips it (#783). flow end also finishes on the board what the flow executed: Tasks an approved implementation step ran, then the work items (User Story, Technical Enabler, Technical Debt, Bug); Feature and Epic stay. Every move goes through the same guarded path as boards finish, so an item still holding a Task the flow did not run is reported as open instead of closed by proxy; --sem-board skips it (#784). In mode local there is no board, so flow end does the same with the documents in docs/: backlog and refinement of each executed item get Status ✅ Concluído and move to the archived/ subfolder of their folder, and Feature and Epic follow when every declared child is done. Only the header Status line changes - a checkbox is never ticked, and nothing in archived/ is overwritten; what cannot close (open criterion, open child, no Status line) is listed with the reason, by flow status before the final approval and by flow end after; --manter-docs skips it (#964). With an approved refinement, record --autonomo also accepts republishing the plan (refinement or card-enrichment) on the SAME card; refining a child card is a new plan and asks the developer, and a refusal names the real reason instead of always saying no refinement covers the card (#758, #782). The skill orchestrator decides and talks to the developer; this command only records, so the flow survives an interruption and every decision can be audited. One branch, one flow: .rbb/fluxo.json is versioned, carries a GUID of the flow and the branch it started on, and every mutating subcommand stages it, so whoever takes over the branch of another developer gets the approvals with it. Which session conducts it (CLAUDE_CODE_SESSION_ID, verified to be the same session_id hooks receive, including inside subagents) lives apart in .rbb/fluxo.local.json, ignored by git: a flow that arrived by checkout leaves the session free until rbb flow resume, because conducting is an act, not a side effect. A flow started on another branch only warns. The file leaves the branch before the PR (git rm), and an urgent demand goes to a new branch from develop, which is born without a flow. Staging that fails inside a repository warns: it is almost always an old .gitignore, which rbb sync all now completes. Each step is written when it happens, never at the end, and an approved step is never redone. A refusal or a return for missing input is written to the same routing ledger that rbb boards handoff uses, so one fact has one record; on the third refusal the flow stops and only an explicit decision of the developer dispatches that card again. Both also record on the step who it went to (--para), shown by status. A step without a card (--executa 1, a local key) has no routing ledger: a return is recorded on the step and exits 0, and a refusal exits 1 without recording anything, pointing to the return with --falta (#961). Approvals are recorded per transition, and autonomy is PROPOSED after five consecutive approvals without change, then confirmed by the developer in orchestration.autonomous inside the versioned project profile. Dispatching a skill at the wrong level of the breakdown is refused: the command reads the card type on the board, so refinement on an Epic is stopped and the answer names the step that was skipped. If the board does not answer, the dispatch goes through and the rule stays where it also lives, in the skill table. record --autonomo has a second basis besides a team-confirmed transition: an approved refinement in this flow covering the card of the step, walked up from the Task through the board; with the board down there is no proof and the question goes back to the developer. end refuses a flow that implemented code no approved code-review saw afterwards, unless the developer names the reason with --sem-revisao, recorded in the ledger. dispatch --ajuste passes the approved-step lock for a named reason (a review finding, a homologation divergence), and reopen brings a concluded flow back to active for that adjustment. Dispatch refuses an agent that does not exist in .claude/agents/ (#913). Dispatch with --decisao records the dev decision and restarts the refusal count for the card (#915). In mode local, dispatch --card also takes the local key (TE-001, TD-003.TASK-01) from rbb docs proximo: the step records the key instead of a null card, and the approved refinement of the item or of a parent declared in Pai covers its Tasks without a board (#940). A demand opens sized (#951): start --tipo demanda requires --porte P, M or G and --proposta with the minimal proposal the developer approved, which becomes step 1 (agent orchestrator, skill proposta, approved), so the po executes it with --executa 1; a bug takes neither. In a P or M flow, dispatch refuses backlog-breakdown and planning because the approved proposal already is the breakdown, also with --executa, and the refusal gives the publishing command, rbb flow dispatch --agente po --executa 1, without --skill (#960); --decisao from the developer passes and is recorded as guarda.forcada with rule porte-P or porte-M. status shows the size, and a flow recorded before it has none and behaves as G. In P and M, start also refuses a proposal without an Acceptance criteria section holding at least one list item, before recording anything: there is no backlog or planning, so the criteria of the card come only from the proposal (#962). Findings get triaged (#952): dispatch --ajuste on code (any skill outside backlog-breakdown, planning, refinement and card-enrichment, or none) requires --severidade blocker, warning or suggestion, and warning or suggestion also require --decisao with the choice of the developer. dispatch --executa n on the SAME unit (agent, skill and item) passes the approved-step lock, because publishing the approved plan is executing it. record --estacionado (repeatable) keeps an out-of-scope finding in the flow; status lists the Achados estacionados and end prints them last, for the developer to pick which become cards in another flow. record --resultado aprovada or aprovada-com-alteracao runs every --artefato under docs/<skill>/ whose schema carries confere-na-aprovacao through the same check as rbb skill verify, and a NAO CONFORME artifact is refused with its problems, so the orchestrator records rejeitada and dispatches again (#954). A schema without the marker, such as an old cache, is not checked. A folder without a schema of its own, such as docs/backlog/ of backlog-breakdown, is checked by the skill of the open step only when that skill declares the folder in grava-em, and a file that is not .md is skipped (#960); the backlog whose status line the refinement changed in mode local is not checked against the refinement contract (#963). dispatch prints the model and effort of the rule (haiku low for --executa; opus high for refinement M and G, planning, backlog-breakdown, architecture-review, security-review and complexidade:alta; haiku low for complexidade:baixa; sonnet medium otherwise), reading the complexidade tag from the card it already reads. A --modelo that differs with --origem regra warns and is recorded as divergente, never refused; --origem dev wins silently. rbb flow models opens with the rule and counts the divergences (#957). Without --modelo the step records the model of the rule with origin regra, so rbb flow models measures what ran instead of padrao-do-agente (#960). With the guard turned off on this machine (rbb guard off), start refuses and names both ways out, rbb guard on or --sem-guarda; with the flag the flow is born with semGuardaDesde and the ledger records guarda.forcada with rule fluxo-sem-guarda. The orchestrator turns the refusal into a question to the developer. dispatch marks a flow that arrived by checkout on a machine with the guard off, and status and end say the flow ran without guard; the mark stays after guard on, because it is history (#966). The first dispatch of implementation or bugfix, or of a layer agent such as dev-api without --skill (devops is not one; it also counts as implementation for the second dispatch and the warning), without --ajuste or --executa, in the session that approved the last step and with no checkpoint, exits 1, opens no step, leaves no event and names both ways out with the suggestion of modeloDaConducao; --decisao does not release it (#990). flow checkpoint --decisao seguir records the decision of the developer and frees the dispatch. flow checkpoint --decisao parar requires no pending step and an anchor sealed after the end of the last step, pauses the flow and prints the resume block with the suggested model. --antes-de-implementar records an early request: no pause, not a decision, and the refusal then offers only the stop; a later seguir replaces it. The stop binds: in a session that stopped, resume and dispatch exit 1, dispatch even after another session takes over, and only resume --decisao passes, recorded as guarda.forcada with rule checkpoint-ignorado. Checkpoints live in .rbb/fluxo.json and are not steps; the analysis session, the sessions that stopped and the context warning live in .rbb/fluxo.local.json, kept per flow for the last 20 flows that left, so a flow started on another branch does not erase them; the conducting session is not kept, and a flow that comes back still asks to be taken over. Past 250k of context after the first implementation, dispatch warns once per session without refusing. checkpoint, resume and the refusal wait for the board at most 5 seconds in total, aborting the request and falling back to the safe suggestion, so a hung board never holds a decision already made. A subagent cannot run it: the shell guard blocks flow checkpoint, or it could record seguir for the developer. Every checkpoint failure (the refusal in both forms, the stopped session, the checks of checkpoint and an invalid --decisao) keeps its concrete command and then prints Leia o guia: with the link to the checkpoint section of the adoption guide; the orchestrator passes that link on to the developer (#990). Before the closing commit, flow end keeps the profile in step with the code (#1038): it runs the same update as rbb profile refresh (libs, lib example paths, glossary counts) and, when the profile changed, the round table is still valid and the project already has derived agents, rbb agents derive, listing only the files that changed. With a stale or pending table it says so and the agents stay as they were. What needs judgement (a new layer, a layer without code) is never changed: it prints the same warning as rbb boards start. A failure here never stops the flow from closing.',   usage:'rbb flow start "<pedido>" --tipo demanda --porte P|M|G --proposta .rbb/proposta.md [--sem-guarda]  ·  rbb flow dispatch --agente <a> [--card <id>] [--ajuste "<o que>" --severidade blocker]  ·  rbb flow record --resultado <r> --estacionado "<achado>"  ·  rbb flow record --resultado <r> [--proximo <a>] [--autonomo --nota "<desvio>"]  ·  rbb flow status|pause|resume  ·  rbb flow reopen --motivo "<divergencia>"  ·  rbb flow checkpoint --decisao parar|seguir --nota "<palavras do dev>" [--antes-de-implementar]  ·  rbb flow resume --decisao "<motivo>"  ·  rbb flow end [--sem-revisao "<motivo>"]  ·  rbb flow autonomy [--confirmar po>tech-lead]',   prereq:null, tags:['orquestrador','fluxo','aprovacao','autonomia'] },
   { id:'guild',           type:'cli', isNew:true, group:'utils',  groupLabel:'Utilities',   name:'rbb guild',           desc:'Mostra o que a plataforma é, o que existe aqui e em que pé está a adoção deste repositório, tudo derivado do disco.',                      detail:'Deriva as skills das pastas de skills/, os agentes do frontmatter, os comandos do proprio commander e o estado da adocao dos arquivos em .rbb/ e .claude/. Nada aqui e lista escrita a mao, entao uma skill nova aparece no instante em que a pasta existe. Com --json, serve de fonte para a skill guild-help, que assim nao precisa manter inventario proprio.',                                                                                                                                                                                               usage:'rbb guild [--json]',                                              prereq:null, tags:['onboarding','inventario','adocao'] },
   { id:'docs-proximo', type:'cli', group:'utils', groupLabel:'Utilities', name:'rbb docs proximo', isNew:true, desc:'Devolve a próxima chave local de um tipo (EP, FT, US, TE, TD, BUG), olhando todas as branches conhecidas.',detail:'In mode local an item had no number, so its documents carried a date and one day served many items (#945). The key is TYPE-NNN (TD-003), a Task is ITEM.TASK-NN. The CLI allocates it because an agent cannot see the other branches: two branches opened from the same develop drew the same key. It takes the highest number in use across every local and remote ref plus the disk, adds one, and never fills a gap. The key goes to stdout and the rest to stderr, so it works inside a command substitution; --fetch updates the remotes first, --json prints chave, maior and refs. Refuses in mode azure (the key is the card number) and when the mode is not declared.',usage:'rbb docs proximo td  ·  rbb docs proximo us --fetch --json',prereq:'.rbb/boards.json com mode local', tags:['local','key','lineage'] },
   { id:'docs-arvore', type:'cli', group:'utils', groupLabel:'Utilities', name:'rbb docs arvore', isNew:true, desc:'Mostra a árvore de trabalho EP, FT e item a partir de docs/, ou o caminho da raiz até uma chave.',detail:'Reads the declarations (> **Chave**: TD-003 and, optionally, **Pai**: FT-002) under docs/ and draws the lineage EP, FT, item, with the title of each and the documents whose name carries the key. With a key it prints the path from the root to it and its sub-tree. Items whose parent does not exist are listed apart as without parent (#945).',usage:'rbb docs arvore  ·  rbb docs arvore TD-003',prereq:'.rbb/boards.json com mode local', tags:['local','key','lineage'] },
@@ -877,14 +962,6 @@ document.addEventListener('keydown', e => {
 });
 document.querySelectorAll('.tab-btn').forEach(btn => btn.addEventListener('click', () => setTab(btn.dataset.tab)));
 
-const root = document.documentElement;
-const SUN  = `<path d="M8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm0 1a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z"/>`;
-const MOON = `<path d="M6 .278a.77.77 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278z"/>`;
-
-let isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-function applyTheme() { root.setAttribute('data-theme', isDark?'dark':'light'); document.getElementById('themeIcon').innerHTML = isDark?MOON:SUN; }
-document.getElementById('themeBtn').addEventListener('click', () => { isDark=!isDark; applyTheme(); });
-applyTheme();
 renderChips();
 render();
 </script>

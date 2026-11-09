@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Guild — a plataforma de engenharia da Rbb Soluções</title>
+  <meta name="description" content="O que é o Guild, por que tem esse nome, como começar no seu repositório e o que tem dentro.">
+  <!--
+    Apresentação pública do Guild (#1039), publicada no rbb-guild junto com o catálogo e o guia
+    (tests/lib/paginas-publicas.sh). Tudo inline: sem fonte, script ou imagem externa.
+    O que está entre as marcas layout:* é o layout comum das três páginas: não edite aqui,
+    edite docs/layout/guild.css e rode `node tests/lib/paginas-guild.js aplicar` (gate 74).
+    Link sempre absoluto: quem lê lá não alcança este repositório (tests/lib/conjunto-publico.sh).
+    Skill citada vai em <code class="skill">/nome</code> e os passos do guild-init em
+    <ol data-fonte="guild-init">: o gate confere os dois (tests/lib/apresentacao-em-dia.sh).
+    Sem números de inventário ("31 skills"): envelhecem a cada versão; o catálogo conta.
+  -->
+<!-- layout:estilo -->
+<style>
+/*
+  Layout comum das páginas públicas do Guild (#1039): apresentação, catálogo e guia.
+
+  Fonte única. Ninguém edita a cópia: tests/lib/paginas-guild.js a escreve dentro de
+  cada página, entre as marcas layout:estilo, porque a página precisa abrir sozinha (o catálogo também vai no pacote do CLI e abre sem rede).
+  Mudou aqui? Rode `node tests/lib/paginas-guild.js aplicar docs/catalog.html
+  docs/apresentacao.html`. O gate 74 reprova a página que ficou para trás.
+
+  Só o que as três páginas têm em comum mora aqui: as cores, o topo, o cabeçalho da
+  página, o botão de chamada e o rodapé. O resto é de cada página.
+*/
+:root {
+  --bg:#0d1117; --surface:#161b22; --surface-hover:#1c2128; --border:#21262d; --border-focus:#3b82f6;
+  --text:#e6edf3; --text-muted:#7d8590; --text-dim:#484f58; --code-bg:#1c2128;
+  --accent-skill:#3b82f6; --accent-cli:#f59e0b; --accent-tmpl:#8b5cf6; --accent-agent:#10b981;
+  --tag-discovery:#60a5fa; --tag-planning:#a78bfa; --tag-dev:#34d399; --tag-review:#fb923c;
+  --tag-debug:#f87171; --tag-delivery:#2dd4bf; --tag-init:#60a5fa; --tag-sync:#a78bfa;
+  --tag-boards:#34d399; --tag-utils:#94a3b8; --tag-tbackend:#34d399; --tag-tfrontend:#38bdf8;
+  --tag-tfullstack:#a78bfa; --tag-tdevops:#f97316;
+  --glow:rgba(59,130,246,.12); --radius:8px; --radius-sm:5px; --largura:1200px;
+  --sans:system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'SF Mono','Fira Code','Cascadia Code','Consolas','Liberation Mono',monospace;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg:#f6f8fa; --surface:#ffffff; --surface-hover:#f0f3f7; --border:#d0d7de;
+    --text:#1f2328; --text-muted:#636c76; --text-dim:#9198a1; --code-bg:#eaedf1; --glow:rgba(59,130,246,.08);
+  }
+}
+:root[data-theme="light"] {
+  --bg:#f6f8fa; --surface:#ffffff; --surface-hover:#f0f3f7; --border:#d0d7de;
+  --text:#1f2328; --text-muted:#636c76; --text-dim:#9198a1; --code-bg:#eaedf1; --glow:rgba(59,130,246,.08);
+}
+
+*, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+html { scroll-padding-top:72px; }
+body { font-family:var(--sans); background:var(--bg); color:var(--text); line-height:1.6; min-height:100vh; display:flex; flex-direction:column; }
+body > main, body > .g-corpo { flex:1; }
+
+/* ── topo: igual nas três, na mesma largura, para a navegação não pular ── */
+.g-topo { position:sticky; top:0; z-index:100; background:var(--bg); border-bottom:1px solid var(--border); }
+.g-topo-in { max-width:var(--largura); margin:0 auto; padding:0 24px; height:56px; display:flex; align-items:center; gap:20px; }
+.g-marca { display:flex; align-items:center; gap:8px; flex-shrink:0; color:var(--text); font-size:15px; font-weight:600; text-decoration:none; }
+.g-selo { font-family:var(--mono); font-size:12px; font-weight:600; letter-spacing:-.3px; background:var(--accent-skill); color:#fff; padding:3px 7px; border-radius:4px; }
+.g-nav { margin-left:auto; min-width:0; display:flex; align-items:center; gap:2px; overflow-x:auto; scrollbar-width:none; }
+.g-nav::-webkit-scrollbar { display:none; }
+.g-nav a { font-size:13px; font-weight:500; color:var(--text-muted); text-decoration:none; padding:6px 10px; border-radius:var(--radius-sm); white-space:nowrap; transition:background .15s, color .15s; }
+.g-nav a:hover { background:var(--surface); color:var(--text); }
+.g-nav a[aria-current="page"] { color:var(--text); background:var(--surface); box-shadow:inset 0 -2px 0 var(--accent-skill); }
+.g-tema { flex-shrink:0; width:32px; height:32px; border:none; background:none; cursor:pointer; border-radius:var(--radius-sm); display:flex; align-items:center; justify-content:center; color:var(--text-muted); transition:background .15s, color .15s; }
+.g-tema:hover { background:var(--surface); color:var(--text); }
+.g-topo a:focus-visible, .g-tema:focus-visible, .g-cta:focus-visible, .g-rodape a:focus-visible { outline:2px solid var(--accent-skill); outline-offset:2px; }
+
+/* ── cabeçalho da página: o que ela é, em uma linha ── */
+.g-cabeca { max-width:var(--largura); width:100%; margin:0 auto; padding:44px 24px 8px; }
+.g-kicker { font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:.08em; color:var(--text-muted); margin-bottom:6px; }
+.g-titulo { font-size:32px; line-height:1.2; letter-spacing:-.02em; font-weight:700; margin-bottom:12px; }
+.g-lead { font-size:17px; line-height:1.6; color:var(--text-muted); max-width:720px; }
+
+.g-cta { margin-top:18px; display:inline-flex; align-items:center; gap:8px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:10px 16px; font-size:14px; font-weight:600; color:var(--accent-skill); text-decoration:none; transition:border-color .15s, box-shadow .15s; }
+.g-cta:hover { border-color:var(--accent-skill); box-shadow:0 0 0 3px var(--glow); }
+
+/* ── rodapé ── */
+.g-rodape { border-top:1px solid var(--border); margin-top:48px; }
+.g-rodape-in { max-width:var(--largura); margin:0 auto; padding:22px 24px; display:flex; flex-wrap:wrap; gap:20px; font-size:13px; color:var(--text-muted); }
+.g-rodape a { color:var(--text-muted); text-decoration:none; }
+.g-rodape a:hover { color:var(--text); }
+.g-assina { margin-left:auto; color:var(--text-dim); }
+
+/* ── diagramas: as peças do desenho, iguais na apresentação e no guia ── */
+.diagrama { margin-top:22px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:12px; overflow-x:auto; }
+.diagrama svg { display:block; width:100%; max-width:900px; min-width:620px; height:auto; margin:0 auto; }
+.diagrama figcaption { font-size:12.5px; color:var(--text-muted); text-align:center; margin-top:6px; }
+.d-harness { fill:none; stroke:var(--accent-cli); stroke-width:1.5; stroke-dasharray:6 5; }
+.d-mesa { fill:none; stroke:var(--tag-planning); stroke-width:1.5; stroke-dasharray:6 5; }
+.d-nota { fill:none; stroke:var(--text-dim); stroke-width:1; stroke-dasharray:4 4; }
+.d-box { fill:var(--surface-hover); stroke:var(--border); stroke-width:1; }
+.d-passo { fill:var(--surface-hover); stroke:var(--border); stroke-width:1; }
+.d-passo-forte { stroke:var(--accent-skill); stroke-width:1.5; }
+.d-dev { fill:var(--surface-hover); stroke:var(--text-dim); stroke-width:1; }
+.d-orq { fill:var(--surface-hover); stroke:var(--tag-planning); stroke-width:1.5; }
+.d-agent { fill:var(--surface-hover); stroke:var(--accent-agent); stroke-width:1.5; }
+.d-rev { fill:var(--surface-hover); stroke:var(--tag-planning); stroke-width:1.2; }
+.d-chip { fill:none; stroke:var(--accent-skill); stroke-width:1; }
+.d-guard { fill:var(--surface-hover); stroke:var(--accent-cli); stroke-width:1; }
+.d-verde { fill:color-mix(in srgb,var(--tag-dev) 12%,transparent); stroke:var(--tag-dev); stroke-width:1.2; }
+.d-vermelho { fill:color-mix(in srgb,var(--tag-debug) 12%,transparent); stroke:var(--tag-debug); stroke-width:1.2; }
+.d-num { fill:var(--accent-skill); }
+.d-seta { stroke:var(--text-dim); stroke-width:1.4; fill:none; }
+.d-ponta { fill:var(--text-dim); }
+.d-t { fill:var(--text); font:600 13px var(--sans); }
+.d-tp { fill:var(--text); font:600 12px var(--sans); }
+.d-m { fill:var(--text-muted); font:12px var(--sans); }
+.d-n { fill:#fff; font:700 12px var(--sans); }
+.d-s { fill:var(--accent-skill); font:11px var(--mono); }
+.d-h { fill:var(--accent-cli); font:600 12px var(--sans); }
+.d-hp { fill:var(--tag-planning); font:600 13px var(--sans); }
+.d-ok { fill:var(--tag-dev); font:600 12px var(--sans); }
+.d-erro { fill:var(--tag-debug); font:600 12px var(--sans); }
+.d-aviso { fill:var(--accent-cli); font:600 12px var(--sans); }
+
+@media (max-width:600px) {
+  .g-topo-in { padding:0 16px; gap:10px; }
+  .g-marca-nome { display:none; }
+  .g-nav a { padding:6px 7px; }
+  .g-nav .g-so-largo { display:none; }
+  .g-cabeca { padding:32px 16px 8px; }
+  .g-titulo { font-size:26px; }
+  .g-rodape-in { padding:20px 16px; }
+}
+</style>
+<!-- /layout:estilo -->
+  <style>
+    body { font-size:15px; line-height:1.65; }
+    code { font-family:var(--mono); font-size:.86em; background:var(--surface-hover); border:1px solid var(--border); border-radius:4px; padding:1px 5px; }
+    main a:not(.g-cta) { color:var(--accent-skill); text-decoration:none; }
+    main a:not(.g-cta):hover { text-decoration:underline; }
+
+    main { max-width:var(--largura); width:100%; margin:0 auto; padding:0 24px; }
+    section { padding:44px 0 8px; }
+    h2 { font-size:22px; letter-spacing:-.01em; margin-bottom:6px; }
+    .sub { color:var(--text-muted); max-width:720px; margin-bottom:22px; }
+
+    .hero { padding-top:44px; }
+    .pecas { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:12px; margin-top:22px; }
+    .peca { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:14px 16px; }
+    .peca b { display:block; margin-bottom:2px; }
+    .peca span { color:var(--text-muted); font-size:13.5px; }
+    .peca.p-skill { border-top:3px solid var(--accent-skill); }
+    .peca.p-agent { border-top:3px solid var(--accent-agent); }
+    .peca.p-orq { border-top:3px solid var(--tag-planning); }
+    .peca.p-harness { border-top:3px solid var(--accent-cli); }
+
+
+    .guilda { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px; }
+    .oficio { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px; }
+    .oficio .de { font-size:12px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.06em; }
+    .oficio .para { font-size:18px; font-weight:600; margin:2px 0 6px; }
+    .oficio p { color:var(--text-muted); font-size:14px; }
+    .oficio.o-skill .para { color:var(--accent-skill); }
+    .oficio.o-agent .para { color:var(--accent-agent); }
+    .oficio.o-guard .para { color:var(--accent-cli); }
+
+    .trilha { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; counter-reset:etapa; }
+    @media (max-width:820px) { .trilha { grid-template-columns:1fr; } }
+    .etapa { position:relative; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px; }
+    .etapa::before { counter-increment:etapa; content:counter(etapa); position:absolute; top:-12px; left:14px; width:24px; height:24px; border-radius:50%; background:var(--accent-skill); color:#fff; font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center; }
+    .etapa h3 { font-size:15px; margin:6px 0 2px; }
+    .etapa .quando { font-size:12px; color:var(--text-muted); margin-bottom:8px; }
+    .etapa p, .etapa li { font-size:13.5px; color:var(--text-muted); }
+    .etapa ol { padding-left:18px; }
+    .etapa li { margin-bottom:2px; }
+
+    .dentro { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:12px; }
+    .bloco { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px; }
+    .bloco h3 { font-size:15px; margin-bottom:8px; }
+    .bloco.b-skill h3 { color:var(--accent-skill); }
+    .bloco.b-agent h3 { color:var(--accent-agent); }
+    .bloco.b-tmpl h3 { color:var(--accent-tmpl); }
+    .bloco.b-cli h3 { color:var(--accent-cli); }
+    .bloco ul { list-style:none; }
+    .bloco li { font-size:13.5px; color:var(--text-muted); padding:3px 0; }
+    .cat { display:inline-block; min-width:92px; font-size:11.5px; font-weight:600; }
+    .c-discovery { color:var(--tag-discovery); } .c-planning { color:var(--tag-planning); } .c-dev { color:var(--tag-dev); }
+    .c-review { color:var(--tag-review); } .c-debug { color:var(--tag-debug); } .c-delivery { color:var(--tag-delivery); }
+
+
+  </style>
+</head>
+<body>
+
+<!-- layout:topo pagina="apresentacao" -->
+<header class="g-topo">
+  <div class="g-topo-in">
+    <a class="g-marca" href="https://rabberto.github.io/rbb-guild/apresentacao.html"><span class="g-selo">rbb</span><span class="g-marca-nome">Guild</span></a>
+    <nav class="g-nav" aria-label="Páginas do Guild">
+      <a href="https://rabberto.github.io/rbb-guild/apresentacao.html" aria-current="page">Sobre o Guild</a>
+      <a href="https://rabberto.github.io/rbb-guild/">Catálogo</a>
+      <a href="https://rabberto.github.io/rbb-guild/guia.html">Guia de adoção</a>
+      <a class="g-so-largo" href="https://github.com/rabberto/rbb-guild/issues">Issues</a>
+    </nav>
+    <button class="g-tema" id="g-tema" type="button" title="Tema claro ou escuro" aria-label="Tema claro ou escuro"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M6 .278a.77.77 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278z"/></svg></button>
+  </div>
+</header>
+<script>
+(function () {
+  var raiz = document.documentElement, botao = document.getElementById('g-tema'), chave = 'rbb-guild-tema';
+  var LUA = '<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M6 .278a.77.77 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278z"/></svg>';
+  var SOL = '<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm0 1a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z"/></svg>';
+  var guardado = null;
+  try { guardado = localStorage.getItem(chave); } catch (e) {}
+  if (guardado === 'dark' || guardado === 'light') raiz.setAttribute('data-theme', guardado);
+  function escuro() {
+    var t = raiz.getAttribute('data-theme');
+    return t ? t === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  }
+  function icone() {
+    botao.innerHTML = escuro() ? LUA : SOL;
+    botao.setAttribute('aria-label', escuro() ? 'Mudar para o tema claro' : 'Mudar para o tema escuro');
+  }
+  botao.addEventListener('click', function () {
+    var novo = escuro() ? 'light' : 'dark';
+    raiz.setAttribute('data-theme', novo);
+    try { localStorage.setItem(chave, novo); } catch (e) {}
+    icone();
+  });
+  icone();
+})();
+</script>
+<!-- /layout:topo -->
+
+<main>
+
+  <!-- ── O que é ─────────────────────────────────────────────────────────── -->
+  <section class="hero" id="o-que-e">
+    <p class="g-kicker">O que é o Guild</p>
+    <h1 class="g-titulo">Um time de agentes de IA que trabalha do jeito do seu time.</h1>
+    <p class="g-lead">
+      O Guild é a plataforma de engenharia da Rbb Soluções para o Claude Code. Ele lê o seu
+      repositório, monta um agente para cada camada da sua arquitetura e conduz o trabalho do
+      card ao PR, com regras que um programa garante, e não só um texto pede.
+    </p>
+
+    <div class="pecas">
+      <div class="peca p-skill"><b>Skills</b><span>processos de engenharia que a IA executa: refinar, implementar, revisar, publicar</span></div>
+      <div class="peca p-agent"><b>Agentes</b><span>um agente por camada do código, cada um dono da sua pasta</span></div>
+      <div class="peca p-orq"><b>Orquestração centralizada</b><span>o <code>orchestrator</code> conduz o fluxo e chama o agente certo para cada etapa</span></div>
+      <div class="peca p-harness"><b>Harness</b><span>hooks, guardas, ledger e âncora de sessão: o que mantém tudo nos trilhos</span></div>
+    </div>
+
+    <div class="diagrama">
+      <svg viewBox="0 0 760 400" role="img" aria-labelledby="diag-titulo diag-desc">
+        <title id="diag-titulo">Como as peças do Guild se encaixam</title>
+        <desc id="diag-desc">Você conversa com o orquestrador. Ele despacha os agentes por camada, cada um com as suas skills. O harness, com hooks, guardas, ledger e âncora de sessão, envolve tudo.</desc>
+        <defs>
+          <marker id="ponta" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path class="d-ponta" d="M0,0 L10,5 L0,10 z"/>
+          </marker>
+        </defs>
+
+        <rect class="d-harness" x="10" y="10" width="740" height="380" rx="14"/>
+        <text class="d-h" x="28" y="34">harness — tudo acontece aqui dentro</text>
+
+        <rect class="d-dev" x="300" y="48" width="160" height="40" rx="8"/>
+        <text class="d-t" x="380" y="73" text-anchor="middle">você, no Claude Code</text>
+        <path class="d-seta" d="M380 88 L380 110" marker-end="url(#ponta)"/>
+
+        <rect class="d-orq" x="260" y="112" width="240" height="52" rx="8"/>
+        <text class="d-t" x="380" y="134" text-anchor="middle">orchestrator</text>
+        <text class="d-m" x="380" y="152" text-anchor="middle">conduz o fluxo · pede sua aprovação</text>
+
+        <path class="d-seta" d="M380 164 L380 182 L95 182 L95 204" marker-end="url(#ponta)"/>
+        <path class="d-seta" d="M380 182 L238 182 L238 204" marker-end="url(#ponta)"/>
+        <path class="d-seta" d="M380 182 L380 204" marker-end="url(#ponta)"/>
+        <path class="d-seta" d="M380 182 L522 182 L522 204" marker-end="url(#ponta)"/>
+        <path class="d-seta" d="M380 182 L665 182 L665 204" marker-end="url(#ponta)"/>
+
+        <rect class="d-agent" x="35" y="206" width="120" height="40" rx="8"/>
+        <text class="d-t" x="95" y="231" text-anchor="middle">po</text>
+        <rect class="d-chip" x="35" y="254" width="120" height="22" rx="11"/>
+        <text class="d-s" x="95" y="269" text-anchor="middle">backlog-breakdown</text>
+
+        <rect class="d-agent" x="178" y="206" width="120" height="40" rx="8"/>
+        <text class="d-t" x="238" y="231" text-anchor="middle">tech-lead</text>
+        <rect class="d-chip" x="178" y="254" width="120" height="22" rx="11"/>
+        <text class="d-s" x="238" y="269" text-anchor="middle">refinement</text>
+
+        <rect class="d-agent" x="320" y="206" width="120" height="40" rx="8"/>
+        <text class="d-t" x="380" y="231" text-anchor="middle">dev-api</text>
+        <rect class="d-chip" x="320" y="254" width="120" height="22" rx="11"/>
+        <text class="d-s" x="380" y="269" text-anchor="middle">implementation</text>
+
+        <rect class="d-agent" x="462" y="206" width="120" height="40" rx="8"/>
+        <text class="d-t" x="522" y="231" text-anchor="middle">dev-frontend</text>
+        <rect class="d-chip" x="462" y="254" width="120" height="22" rx="11"/>
+        <text class="d-s" x="522" y="269" text-anchor="middle">implementation</text>
+
+        <rect class="d-agent" x="605" y="206" width="120" height="40" rx="8"/>
+        <text class="d-t" x="665" y="231" text-anchor="middle">qa</text>
+        <rect class="d-chip" x="605" y="254" width="120" height="22" rx="11"/>
+        <text class="d-s" x="665" y="269" text-anchor="middle">code-review</text>
+
+        <rect class="d-guard" x="35" y="298" width="160" height="72" rx="8"/>
+        <text class="d-h" x="115" y="322" text-anchor="middle">guardas (hooks)</text>
+        <text class="d-m" x="115" y="342" text-anchor="middle">barram escrita fora</text>
+        <text class="d-m" x="115" y="358" text-anchor="middle">da pasta do agente</text>
+
+        <rect class="d-guard" x="212" y="298" width="160" height="72" rx="8"/>
+        <text class="d-h" x="292" y="322" text-anchor="middle">ledger</text>
+        <text class="d-m" x="292" y="342" text-anchor="middle">registra cada decisão</text>
+        <text class="d-m" x="292" y="358" text-anchor="middle">e cada recusa</text>
+
+        <rect class="d-guard" x="389" y="298" width="160" height="72" rx="8"/>
+        <text class="d-h" x="469" y="322" text-anchor="middle">âncora de sessão</text>
+        <text class="d-m" x="469" y="342" text-anchor="middle">a próxima conversa</text>
+        <text class="d-m" x="469" y="358" text-anchor="middle">começa onde parou</text>
+
+        <rect class="d-guard" x="566" y="298" width="159" height="72" rx="8"/>
+        <text class="d-h" x="645" y="322" text-anchor="middle">CLI rbb</text>
+        <text class="d-m" x="645" y="342" text-anchor="middle">board, perfil e fluxo,</text>
+        <text class="d-m" x="645" y="358" text-anchor="middle">sem gastar token</text>
+      </svg>
+    </div>
+  </section>
+
+  <!-- ── Por que Guild ───────────────────────────────────────────────────── -->
+  <section id="por-que-guild">
+    <p class="g-kicker">Por que Guild</p>
+    <h2>Como uma guilda de ofício.</h2>
+    <p class="sub">
+      Nas guildas de ofício, cada mestre dominava o seu ofício, e a guilda garantia o padrão do
+      trabalho de todos. O Guild é isso para a engenharia de software: especialistas, cada um
+      no seu ofício, sob um padrão que a plataforma garante.
+    </p>
+    <div class="guilda">
+      <div class="oficio o-skill">
+        <div class="de">o ofício</div>
+        <div class="para">Skills</div>
+        <p>Como se faz: o passo a passo de refinar um card, implementar, revisar e publicar, escrito uma vez e seguido sempre.</p>
+      </div>
+      <div class="oficio o-agent">
+        <div class="de">os artesãos</div>
+        <div class="para">Agentes</div>
+        <p>Quem faz: um especialista por camada do seu código, que conhece as pastas, as bibliotecas e os nomes do projeto.</p>
+      </div>
+      <div class="oficio o-guard">
+        <div class="de">o selo</div>
+        <div class="para">Guardas</div>
+        <p>O que garante: um agente não escreve na pasta do outro, e o card não anda sem o passo anterior. Não é pedido, é bloqueio.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Como começar ────────────────────────────────────────────────────── -->
+  <section id="como-comecar">
+    <p class="g-kicker">Como começar no seu repositório</p>
+    <h2>Quatro etapas, e só a primeira é no terminal.</h2>
+    <p class="sub">O resto você pede ao Claude Code, e a skill conduz, explicando cada escolha.</p>
+    <div class="trilha">
+      <div class="etapa">
+        <h3>Preparar a máquina</h3>
+        <div class="quando">uma vez por máquina · uns 10 minutos</div>
+        <p>Node.js, Git e Claude Code instalados; o npm autenticado no feed; o CLI <code>rbb</code> instalado.</p>
+      </div>
+      <div class="etapa">
+        <h3><code class="skill">/guild-init</code></h3>
+        <div class="quando">uma vez por repositório</div>
+        <ol data-fonte="guild-init">
+          <li>traz skills e agentes para o repositório</li>
+          <li>conecta o board</li>
+          <li>gera o perfil do projeto</li>
+          <li>atualiza as dependências no perfil</li>
+          <li>monta um agente por camada e liga as guardas</li>
+          <li>confere a máquina e o projeto</li>
+        </ol>
+      </div>
+      <div class="etapa">
+        <h3>Dia a dia</h3>
+        <div class="quando">a cada card</div>
+        <p>Peça o trabalho ao <code class="skill">/orchestrator</code>: ele refina, implementa, revisa e para antes de cada decisão sua. Dúvida? <code class="skill">/guild-help</code>.</p>
+      </div>
+      <div class="etapa">
+        <h3><code class="skill">/guild-upgrade</code></h3>
+        <div class="quando">a cada versão nova</div>
+        <p>Atualiza o CLI, as skills, os agentes e as guardas, na ordem certa, e termina verificando tudo.</p>
+      </div>
+    </div>
+    <a class="g-cta" href="https://rabberto.github.io/rbb-guild/guia.html">Guia prático de adoção, passo a passo →</a>
+  </section>
+
+  <!-- ── O que tem dentro ────────────────────────────────────────────────── -->
+  <section id="o-que-tem-dentro">
+    <p class="g-kicker">O que tem dentro</p>
+    <h2>Do primeiro olhar no código até a entrega.</h2>
+    <p class="sub">Alguns exemplos. A lista completa, com o que cada um recebe e o que gera, está no catálogo.</p>
+    <div class="dentro">
+      <div class="bloco b-skill">
+        <h3>Skills, por etapa</h3>
+        <ul>
+          <li><span class="cat c-discovery">Discovery</span> <code class="skill">/codebase-analysis</code> <code class="skill">/project-discovery</code></li>
+          <li><span class="cat c-planning">Planning</span> <code class="skill">/refinement</code> <code class="skill">/planning</code></li>
+          <li><span class="cat c-dev">Development</span> <code class="skill">/implementation</code> <code class="skill">/backend-bootstrap</code></li>
+          <li><span class="cat c-review">Review</span> <code class="skill">/code-review</code> <code class="skill">/security-review</code></li>
+          <li><span class="cat c-debug">Debug</span> <code class="skill">/bug-triage</code> <code class="skill">/bugfix</code></li>
+          <li><span class="cat c-delivery">Delivery</span> <code class="skill">/release</code> <code class="skill">/cicd</code></li>
+        </ul>
+      </div>
+      <div class="bloco b-agent">
+        <h3>Agentes</h3>
+        <ul>
+          <li><code>po</code> quebra a demanda em cards</li>
+          <li><code>tech-lead</code> refina e decide a arquitetura</li>
+          <li><code>dev-&lt;camada&gt;</code> um por camada do seu código</li>
+          <li><code>qa</code> revisa antes do PR</li>
+          <li><code>devops</code> pipeline, Docker e infraestrutura</li>
+          <li><code>designer</code> interface e identidade visual</li>
+        </ul>
+      </div>
+      <div class="bloco b-tmpl">
+        <h3>Templates</h3>
+        <ul>
+          <li>backend .NET</li>
+          <li>frontend Angular</li>
+          <li>fullstack .NET + Angular</li>
+          <li>devops no Azure</li>
+        </ul>
+      </div>
+      <div class="bloco b-cli">
+        <h3>CLI <code>rbb</code></h3>
+        <ul>
+          <li><code>rbb boards</code> move o card, sempre pelo caminho certo</li>
+          <li><code>rbb flow</code> grava o fluxo e as suas aprovações</li>
+          <li><code>rbb doctor</code> diz o que falta e como resolver</li>
+          <li><code>rbb guard</code> liga e confere as guardas</li>
+          <li><code>rbb update</code> traz a versão nova</li>
+        </ul>
+      </div>
+    </div>
+    <a class="g-cta" href="https://rabberto.github.io/rbb-guild/">Ver o catálogo completo →</a>
+  </section>
+
+</main>
+
+<!-- layout:rodape -->
+<footer class="g-rodape">
+  <div class="g-rodape-in">
+    <a href="https://rabberto.github.io/rbb-guild/apresentacao.html">Sobre o Guild</a>
+    <a href="https://rabberto.github.io/rbb-guild/">Catálogo</a>
+    <a href="https://rabberto.github.io/rbb-guild/guia.html">Guia de adoção</a>
+    <a href="https://github.com/rabberto/rbb-guild/issues">Issues</a>
+    <span class="g-assina">Guild · Rbb Soluções</span>
+  </div>
+</footer>
+<!-- /layout:rodape -->
+
+</body>
+</html>
