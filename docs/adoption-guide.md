@@ -48,7 +48,7 @@ CLI), ou é segredo (tokens), que as skills nunca pedem nem gravam.
 |---|---|
 | **Node.js** (LTS), que traz o **npm** | <https://nodejs.org/en/download> |
 | **Git** (no Windows, já traz o Git Bash) | <https://git-scm.com/downloads> |
-| **Claude Code** (CLI ou extensão do VS Code) | <https://code.claude.com/docs/en/setup> |
+| **Claude Code**: onde rodar, na 1.6 | <https://code.claude.com/docs/en/setup> |
 
 **Windows:** as três pelo `winget`, no **PowerShell** (o Git Bash só existe
 depois que o Git for instalado):
@@ -58,9 +58,6 @@ winget install --id OpenJS.NodeJS.LTS -e
 winget install --id Git.Git -e
 winget install --id Anthropic.ClaudeCode -e
 ```
-
-Prefere o Claude Code dentro do VS Code? Instale a extensão **Claude Code** pelo
-marketplace do VS Code.
 
 E o acesso ao **feed** do CLI — é o único acesso necessário: skills, agentes e
 templates vêm dentro do pacote. Quem distribui o Guild para o seu time libera o
@@ -149,6 +146,52 @@ Sem isso, criar uma branch a partir de `origin/develop` grava o upstream como
 `origin/develop`, e o `git push` passa a sugerir empurrar direto para a
 `develop`. Com `simple`, use `git push -u origin HEAD` na primeira vez.
 
+### 1.6 Onde rodar o Claude Code
+
+O Guild roda onde o Claude Code roda. Há três caminhos oficiais, todos do publicador
+**Anthropic**:
+
+| Onde | Como instalar |
+|---|---|
+| **VS Code** | extensão **Claude Code**, pelo marketplace do VS Code |
+| **JetBrains** (IntelliJ, Rider, WebStorm…) | plugin **Claude Code [Beta]**, pelo JetBrains Marketplace. Ele roda o CLI no terminal integrado da IDE |
+| **Terminal**, com qualquer editor | o CLI, pelo `winget` do 1.1 ou pelo link da tabela de pré-requisitos |
+
+Conferido com o Guild no Claude Code 2.1.322: o `/guild-init` e a guarda barrando a escrita
+fora da camada, no CLI no terminal e na extensão do VS Code. O plugin do JetBrains é caminho
+oficial, mas ainda não foi conferido com o Guild.
+
+> **A sessão roda na pasta em que é aberta.** No VS Code, abra a pasta do repositório
+> (*File → Open Folder*) antes de começar a conversa. Numa janela sem pasta, a sessão nasce
+> fora do projeto, e a guarda não vale ali.
+
+**CLI, guia rápido:**
+
+1. Instale e, num terminal novo, confira com `claude --version`.
+2. Abra o terminal na raiz do repositório e rode `claude`.
+3. Rode `/guild-init`. Num repositório que já adotou o Guild, `/guild-upgrade`.
+4. No dia a dia, siga a tabela **Dia a dia**, mais abaixo neste guia.
+
+O terminal não achou o `claude`? A pasta da instalação não está no PATH. No instalador
+nativo do Windows, ela é a `%USERPROFILE%\.local\bin`: acrescente-a ao PATH do usuário e abra
+outro terminal.
+
+A extensão do VS Code se atualiza com o VS Code. O CLI só se atualiza sozinho com a
+atualização automática ligada. Para atualizar na hora, rode `claude update`.
+
+**Visual Studio:** não há extensão oficial da Anthropic. O caminho recomendado é o CLI no
+terminal integrado (*Exibir → Terminal*), com o guia rápido acima. Ele ainda não foi
+conferido com o Guild dentro do Visual Studio.
+
+> Existe uma extensão da comunidade, **Claude Code Extension for Visual Studio**
+> (`dliedke.ClaudeCodeExtension`, VS 2022 e 2026, só Windows). Fica só como sugestão: não é
+> oficial, é mantida por uma pessoa, não tem suporte da Anthropic e não foi conferida com o
+> Guild. O ideal é usar o VS Code, o JetBrains ou o CLI.
+
+**Segurança:** instale só pelo marketplace oficial de cada editor, conferindo que o publicador
+é a Anthropic. Nunca instale um `.vsix` baixado de outro lugar: já houve build adulterada da
+extensão num marketplace de terceiros.
+
 ---
 
 ## Etapa 2 — Configurar o repositório
@@ -174,6 +217,26 @@ Você responde às perguntas; ela explica cada escolha.
 > **Mapeamento de estados do board [Azure Boards]:** responda com os estados
 > **reais** do processo do seu board, não com o preset "mais parecido". Estado
 > que não existe no board faz a guarda recusar transições legítimas depois.
+
+Depois dos hooks, a skill pergunta se você quer liberar a **edição de arquivos**, a **leitura do
+git** e o **build e teste da stack**, para o Claude parar de pedir aprovação no rotineiro. Só o que
+você escolher é gravado, no `.claude/settings.local.json`: o arquivo é seu, fora do git, e não do
+time. **Apagar arquivo segue perguntando**, a menos que você peça para liberar também.
+
+Em seguida, ela oferece uma **notificação do sistema** para quando o Claude precisa de você. Ela
+também fica no `.claude/settings.local.json`, só com o seu sim. O que cada lugar avisa, conferido
+no Claude Code 2.1.322:
+
+| Onde você roda | Aprovação de comando pendente | Parado esperando você | Fim de cada turno |
+|---|---|---|---|
+| CLI no terminal | avisa | avisa, depois de um minuto | não avisa: a espera já cobre |
+| Extensão do VS Code | avisa | não disponível | avisa, no lugar da espera |
+| Plugin do JetBrains | não provado | não provado | não provado |
+
+A aprovação só avisa se ficar uns segundos sem resposta: quem está olhando a tela não recebe aviso.
+Se você já tem um aviso seu configurado, a skill diz onde e pergunta qual manter, para você não
+receber dois. Com o seu sim, a skill dispara um aviso de teste na hora. No Linux, o aviso precisa do `notify-send`:
+se faltar, ela diz o pacote que resolve.
 
 Parou no meio? Rode `/guild-init` de novo — ela confere o estado antes de cada
 passo e não destrói configuração existente.
@@ -258,6 +321,7 @@ vez por projeto, e o time atual segue valendo até lá.
 | Saber qual skill serve para o meu caso, ou o estado do Guild neste repositório | `/guild-help` |
 | Atualizar a plataforma inteira (CLI, skills, agentes, hooks) | `/guild-upgrade` |
 | Registrar um problema ou uma sugestão | `/feedback <o que aconteceu>` |
+| Saber a mensagem do commit de um card | O Guild sugere ao fim da etapa com código. Quem commita é você |
 
 Sem o board da plataforma, o feedback vira issue **pública**: cite a camada em que
 o problema nasceu (api, domain, repository), e não o nome do repositório nem o de
