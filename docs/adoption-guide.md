@@ -294,6 +294,10 @@ deixar o comando falhar.
 Ela não pede tokens: se faltar autenticação no feed, ela mostra o que fazer e
 você refaz o passo 1.2.
 
+Como saber que saiu versão nova: a verificação que o `/guild-init` e o `/guild-upgrade`
+rodam no fim avisa quando o feed tem um CLI mais novo que o instalado, com as duas
+versões. É só um alerta: atualizar não é obrigatório, e o resto da verificação não muda.
+
 **Perfil sem mesa redonda.** O time de agentes só se regenera de um perfil que a
 mesa redonda aprovou: três revisores independentes conferem o perfil contra o código
 antes de o time ser gerado. Todo perfil anterior à mesa não a tem, então o
