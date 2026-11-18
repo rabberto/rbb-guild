@@ -219,9 +219,11 @@ Você responde às perguntas; ela explica cada escolha.
 > que não existe no board faz a guarda recusar transições legítimas depois.
 
 Depois dos hooks, a skill pergunta se você quer liberar a **edição de arquivos**, a **leitura do
-git** e o **build e teste da stack**, para o Claude parar de pedir aprovação no rotineiro. Só o que
-você escolher é gravado, no `.claude/settings.local.json`: o arquivo é seu, fora do git, e não do
-time. **Apagar arquivo segue perguntando**, a menos que você peça para liberar também.
+git e do shell** (`git status`, `git log`, `git rev-parse`, `ls`, `grep`…) e o **build e teste da
+stack**, para o Claude parar de pedir aprovação no rotineiro. Só o que você escolher é gravado, no
+`.claude/settings.local.json`: o arquivo é seu, fora do git, e não do time. **Apagar arquivo segue
+perguntando**, a menos que você peça para liberar também. As leituras da plataforma (o diagnóstico,
+a versão, o estado da guarda) já vêm liberadas para o time, no `.claude/settings.json`.
 
 Em seguida, ela oferece uma **notificação do sistema** para quando o Claude precisa de você. Ela
 também fica no `.claude/settings.local.json`, só com o seu sim. O que cada lugar avisa, conferido
@@ -327,9 +329,11 @@ vez por projeto, e o time atual segue valendo até lá.
 | Registrar um problema ou uma sugestão | `/feedback <o que aconteceu>` |
 | Saber a mensagem do commit de um card | O Guild sugere ao fim da etapa com código. Quem commita é você |
 
-Sem o board da plataforma, o feedback vira issue **pública**: cite a camada em que
-o problema nasceu (api, domain, repository), e não o nome do repositório nem o de
-uma classe do projeto. O envio recusa o texto que os cita e diz o trecho a reescrever.
+O feedback vira issue **pública** no [rabberto/rbb-guild](https://github.com/rabberto/rbb-guild/issues),
+para todos: o `/feedback` avisa ao gravar, e o envio publica direto quando você pede.
+Cite a camada em que o problema nasceu (api, domain, repository), e não o nome do
+repositório nem o de uma classe do projeto. O envio recusa o texto que os cita e diz
+o trecho a reescrever.
 
 ---
 
@@ -371,6 +375,5 @@ Para tirar as skills de entrada da máquina, apague as pastas `guild-init`,
 `guild-help` e `guild-upgrade` de `~/.claude/skills/` e o arquivo
 `~/.rbb/skills-de-entrada.json`: o `npm uninstall -g` não as remove.
 
-Dúvidas ou feedback: `/feedback <contexto do problema>`. Sem o board da
-plataforma, o envio vira uma issue pública no
-[rabberto/rbb-guild](https://github.com/rabberto/rbb-guild/issues).
+Dúvidas ou feedback: `/feedback <contexto do problema>`. O envio vira uma issue
+pública no [rabberto/rbb-guild](https://github.com/rabberto/rbb-guild/issues).
